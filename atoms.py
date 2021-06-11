@@ -4,50 +4,38 @@ import pyghelper
 import constants as co
 
 
-class Hydrogen:
-    def __init__(self, x_center, y_center):
+class Atom:
+    def __init__(self, x_center, y_center, radius, max_bonds, texture):
         self.x = x_center
         self.y = y_center
-        self.links = []
+        self.radius = radius
+        self.max_bonds = max_bonds
+        self.texture = texture
 
     def isTouching(self, x, y):
-        return (self.x - x) ** 2 + (self.y - y) ** 2 <= co.H_RADIUS ** 2
-
+        return (self.x - x) ** 2 + (self.y - y) ** 2 <= self.radius ** 2
+        
     def hasAvailableBonds(self):
-        return len(self.links) < co.H_BONDS
+        return len(self.links) < self.max_bonds
 
-class Oxygen:
+    def getTopLeftCorner(self):
+        return (self.x - self.radius // 2, self.y - self.radius // 2)
+
+class Hydrogen(Atom):
     def __init__(self, x_center, y_center):
-        self.x = x_center
-        self.y = y_center
-        self.links = []
+        super().__init__(x_center, y_center, co.H_RADIUS, co.H_BONDS, co.H_TEXTURE)
 
-    def isTouching(self, x, y):
-        return (self.x - x) ** 2 + (self.y - y) ** 2 <= co.O_RADIUS ** 2
-
-    def hasAvailableBonds(self):
-        return len(self.links) < co.O_BONDS
-
-class Nitrogen:
+class Oxygen(Atom):
     def __init__(self, x_center, y_center):
-        self.x = x_center
-        self.y = y_center
-        self.links = []
+        super().__init__(x_center, y_center, co.O_RADIUS, co.O_BONDS, co.O_TEXTURE)
 
-    def isTouching(self, x, y):
-        return (self.x - x) ** 2 + (self.y - y) ** 2 <= co.N_RADIUS ** 2
-
-    def hasAvailableBonds(self):
-        return len(self.links) < co.N_BONDS
-
-class Carbon:
+class Nitrogen(Atom):
     def __init__(self, x_center, y_center):
-        self.x = x_center
-        self.y = y_center
-        self.links = []
+        super().__init__(x_center, y_center, co.N_RADIUS, co.N_BONDS, co.N_TEXTURE)
 
-    def isTouching(self, x, y):
-        return (self.x - x) ** 2 + (self.y - y) ** 2 <= co.C_RADIUS ** 2
+class Carbon(Atom):
+    def __init__(self, x_center, y_center):
+        super().__init__(x_center, y_center, co.C_RADIUS, co.C_BONDS, co.C_TEXTURE)
 
-    def hasAvailableBonds(self):
-        return len(self.links) < co.C_BONDS
+class Bond:
+    pass
