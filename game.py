@@ -130,6 +130,8 @@ class Game:
 
         mouse_x, mouse_y = data['pos']
         for atom in self.atoms:
+            if atom.isAppearing():
+                continue
             if not atom.hasAvailableBonds():
                 continue
             if atom.isTouching(mouse_x, mouse_y):
@@ -157,15 +159,13 @@ class Game:
     def draw_game(self):
         self.screen.blit(co.BG_TEXTURE, (0, 0))
 
-        for star in self.stars:
-            self.screen.blit(star.texture, (star.x, star.y))
+        self.screen.blits([(star.texture, (star.x, star.y)) for star in self.stars])
 
         for _, bonds_dict in self.bonds.items():
             for _, (bond_texture, bond_position) in bonds_dict.items():
                 self.screen.blit(bond_texture, bond_position)
 
-        for atom in self.atoms:
-            self.screen.blit(atom.get_texture(), atom.getTopLeftCorner())
+        self.screen.blits([(atom.get_texture(), atom.getTopLeftCorner()) for atom in self.atoms])
 
         if self.bonding.texture_ready:
             self.screen.blit(self.bonding.texture, self.bonding.position)
@@ -208,6 +208,8 @@ class Game:
         self.star_cooldown -= 1
         if self.star_cooldown <= 0:
             self.star_cooldown = 1
+            if len(self.stars) > 25:
+                return
             for i in range(3):
                 radius = co.STAR_SPAWN_RADIUS * random.random()
                 angle = random.random() * 2 * math.pi
@@ -220,20 +222,26 @@ class Game:
     def manage_stars(self):
         for star in self.stars:
             star.move()
-        self.stars = [star for star in self.stars if not star.out]
+            if star.out:
+                self.stars.remove(star)
     
     def loop_game(self):
-        self.draw_game()
+        for atom in self.atoms:
+            if not atom.isAppearing():
+                continue
+            atom.appear()
+
         self.spawn_atom()
         self.spawn_star()
         self.manage_stars()
+
         if self.multiplier > co.MULTIPLIER_MIN:
             self.multiplier *= co.MULTIPLIER_DECREASE
         if self.discovered_text is not None:
             self.discovered_text[1] -= 1
             if self.discovered_text[1] <= 0:
                 self.discovered_text = None
-
+        self.draw_game()
     def loop(self):
         self.clock.tick(60)
         self.events.listen()

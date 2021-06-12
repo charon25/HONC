@@ -17,12 +17,19 @@ class AtomType(Enum):
 
 class Atom:
     def __init__(self, x_center, y_center, radius, max_bonds):
+        self.x0 = x_center
         self.x = x_center
+        self.y0 = y_center
         self.y = y_center
         self.radius = radius
         self.max_bonds = max_bonds
         self.type: AtomType = AtomType(self.max_bonds)
         self.bonds: List[Atom] = []
+        self.appearing = co.APPEARING_DURATION
+        self.scale_factor = 0.0
+
+    def isAppearing(self):
+        return self.appearing is not None
 
     def isTouching(self, x, y):
         return (self.x - x) ** 2 + (self.y - y) ** 2 <= self.radius ** 2
@@ -34,17 +41,31 @@ class Atom:
         return len(self.bonds) < self.max_bonds
 
     def getTopLeftCorner(self):
-        return (self.x - self.radius, self.y - self.radius)
+        if self.appearing is None:
+            return (self.x - self.radius, self.y - self.radius)
+        else:
+            return (self.x - self.radius * self.scale_factor, self.y - self.radius * self.scale_factor)
 
     def get_texture(self):
-        if self.type == AtomType.HYDROGEN:
-            return co.H_TEXTURES[len(self.bonds)]
-        elif self.type == AtomType.OXYGEN:
-            return co.O_TEXTURES[len(self.bonds)]
-        elif self.type == AtomType.NITROGEN:
-            return co.N_TEXTURES[len(self.bonds)]
-        elif self.type == AtomType.CARBON:
-            return co.C_TEXTURES[len(self.bonds)]
+        if self.appearing is None:
+            if self.type == AtomType.HYDROGEN:
+                return co.H_TEXTURES[len(self.bonds)]
+            elif self.type == AtomType.OXYGEN:
+                return co.O_TEXTURES[len(self.bonds)]
+            elif self.type == AtomType.NITROGEN:
+                return co.N_TEXTURES[len(self.bonds)]
+            elif self.type == AtomType.CARBON:
+                return co.C_TEXTURES[len(self.bonds)]
+        else:
+            size = int(2 * self.radius * self.scale_factor)
+            if self.type == AtomType.HYDROGEN:
+                return pyg.transform.scale(co.H_TEXTURES[len(self.bonds)], (size, size))
+            elif self.type == AtomType.OXYGEN:
+                return pyg.transform.scale(co.O_TEXTURES[len(self.bonds)], (size, size))
+            elif self.type == AtomType.NITROGEN:
+                return pyg.transform.scale(co.N_TEXTURES[len(self.bonds)], (size, size))
+            elif self.type == AtomType.CARBON:
+                return pyg.transform.scale(co.C_TEXTURES[len(self.bonds)], (size, size))
 
     def get_bond_texture(self, multiplicity):
         if self.type == AtomType.HYDROGEN:
@@ -71,6 +92,12 @@ class Atom:
 
     def get_multiplicity(self, atom):
         return sum(bonded_atom == atom for bonded_atom in self.bonds)
+
+    def appear(self):
+        self.appearing -= 1
+        self.scale_factor = 1 - self.appearing / co.APPEARING_DURATION
+        if self.appearing <= 0:
+            self.appearing = None
 
     @staticmethod
     def generate_random(previous_atoms, weights: List[float] = [0.25, 0.25, 0.25, 0.25]):

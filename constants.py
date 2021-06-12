@@ -53,6 +53,9 @@ def FORMULA_TEXT_COLOR(bonds_count):
     intensity = max(0, 200 - 20 * bonds_count)
     return (200, 200, intensity)
 
+#Apparition atomes
+APPEARING_DURATION = int(0.1 * 60)
+
 # Hydrogène
 H_RADIUS = 30
 H_BONDS = 1
