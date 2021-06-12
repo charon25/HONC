@@ -31,10 +31,12 @@ class Game:
         self.temp()
     
     def temp(self):
-        self.atoms.append(Hydrogen(500, 350))
-        self.atoms.append(Hydrogen(200, 350))
-        self.atoms.append(Carbon(350, 200))
-        self.atoms.append(Carbon(350, 400))
+        for i in range(10):
+            self.atoms.append(Atom.generate_random(self.atoms, [0.25, 0.25, 0.25, 0.25]))
+        # self.atoms.append(Hydrogen(500, 350))
+        # self.atoms.append(Hydrogen(200, 350))
+        # self.atoms.append(Carbon(350, 200))
+        # self.atoms.append(Carbon(350, 400))
 
     def stop(self):
         self.is_ended = True
@@ -65,13 +67,8 @@ class Game:
         self.bonding.atom.bind(atom)
         multiplicity += 1
 
-        print(multiplicity)
         self.bonding.update_texture(atom.x, atom.y, multiplicity)
         self.add_bond(atom, self.bonding.atom)
-        # if multiplicity == 1:
-        #     self.add_bond(atom, self.bonding.atom)
-        # else:
-        #     self.bonds[id(self.bonding.atom)] = (self.bonding.texture, self.bonding.position, id(atom))
         self.bonding.disable()
 
         if not atom.hasAvailableBonds() and not self.bonding.atom.hasAvailableBonds():
@@ -105,7 +102,8 @@ class Game:
                 if self.bonding.is_none:
                     self.bonding.enable(atom)
                 else:
-                    self.create_bond(atom)
+                    if atom != self.bonding.atom:
+                        self.create_bond(atom)
                 break
 
     def mousemove(self, data):

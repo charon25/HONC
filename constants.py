@@ -8,6 +8,8 @@ BG_TEXTURE = pyghelper.Image.create('resources/textures/bg.png')
 
 # Général
 BONDING_HEIGHT = [None, 15, 2 * 15 + 10, 3 * 15 + 2 * 10]
+SPAWN_BORDER_MARGIN = 30
+SPAWN_COLLIDES_MARGIN = 8
 
 # Hydrogène
 H_RADIUS = 30

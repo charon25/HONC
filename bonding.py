@@ -32,7 +32,6 @@ class Bonding:
         angle = -math.atan2(mouse_y - atom_y, mouse_x - atom_x) # radians
 
         self.texture = pyg.Surface((distance, height), flags=pyg.SRCALPHA)
-        if multiplicity > 1:print(self.atom.get_bond_texture(multiplicity))
         self.texture.blit(self.atom.get_bond_texture(multiplicity), pyg.Rect(0, 0, distance, height))
         self.texture = pyg.transform.rotate(self.texture, angle * 180 / math.pi) # angle in degrees
 
