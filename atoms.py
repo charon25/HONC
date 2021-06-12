@@ -42,10 +42,16 @@ class Atom:
         elif self.type == AtomType.CARBON:
             return co.C_TEXTURE
 
-    def get_bond_texture(self):
-        return co.H_BOND_TEXTURE
+    def get_bond_texture(self, multiplicity):
+        # print(self.type, multiplicity)
         if self.type == AtomType.HYDROGEN:
-            return co.H_BOND_TEXTURE
+            return co.H_BOND_TEXTURES[multiplicity]
+        elif self.type == AtomType.OXYGEN:
+            return co.O_BOND_TEXTURES[multiplicity]
+        elif self.type == AtomType.NITROGEN:
+            return co.N_BOND_TEXTURES[multiplicity]
+        elif self.type == AtomType.CARBON:
+            return co.C_BOND_TEXTURES[multiplicity]
 
     def get_symbol(self):
         if self.type == AtomType.HYDROGEN:
@@ -59,6 +65,9 @@ class Atom:
 
     def bind(self, atom):
         self.bonds.append(atom)
+
+    def get_multiplicity(self, atom):
+        return sum(bonded_atom == atom for bonded_atom in self.bonds)
 
 
 class Hydrogen(Atom):
@@ -77,38 +86,3 @@ class Carbon(Atom):
     def __init__(self, x_center, y_center):
         super().__init__(x_center, y_center, co.C_RADIUS, co.C_BONDS)
 
-class Bonding:
-    def __init__(self):
-        self.is_none = True
-        self.texture_ready = False
-        self.atom: Atom = None
-        self.texture = None
-        self.position = None
-
-    def enable(self, atom: Atom):
-        self.is_none = False
-        self.atom = atom
-
-    def disable(self):
-        self.is_none = True
-        self.texture_ready = False
-
-    def update_texture(self, mouse_x, mouse_y):
-        if self.is_none:
-            return
-        
-        atom_x, atom_y = self.atom.x, self.atom.y
-        distance = math.dist((mouse_x, mouse_y), (atom_x, atom_y))
-        angle = -math.atan2(mouse_y - atom_y, mouse_x - atom_x) # radians
-
-        self.texture = pyg.Surface((distance, co.BONDING_HEIGHT), flags=pyg.SRCALPHA)
-        self.texture.blit(self.atom.get_bond_texture(), pyg.Rect(0, 0, distance, co.BONDING_HEIGHT))
-        self.texture = pyg.transform.rotate(self.texture, angle * 180 / math.pi) # angle in degrees
-
-        width, height = self.texture.get_width(), self.texture.get_height()
-        self.position = (
-            atom_x - width / 2 + distance / 2 * math.cos(angle),
-            atom_y - height / 2 - distance / 2 * math.sin(angle)
-        )
-
-        self.texture_ready = True
