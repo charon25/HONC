@@ -151,3 +151,9 @@ PARTICLE_TEXTURES = [
 ]
 PARTICLE_DURATION = int(0.4 * 60)
 PARTICLE_COUNT_BY_ATOM = [None, 4, 6, 8, 10]
+
+# Bouton restart
+RESTART_BTN_TEXTURE = pyghelper.Image.create('resources/textures/restart_btn.png')
+RESTART_BTN_SIZE = 30
+RESTART_BTN_POS_X = WIDTH - RESTART_BTN_SIZE - 5
+RESTART_BTN_POS_Y = HEIGHT - RESTART_BTN_SIZE - 5

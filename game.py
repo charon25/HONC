@@ -139,6 +139,10 @@ class Game:
             return
 
         mouse_x, mouse_y = data['pos']
+
+        if co.RESTART_BTN_POS_X <= mouse_x <= co.RESTART_BTN_POS_Y + co.RESTART_BTN_SIZE and co.RESTART_BTN_POS_Y <= mouse_y <= co.RESTART_BTN_POS_X + co.RESTART_BTN_SIZE:
+            self.start(restart=True)
+
         for atom in self.atoms:
             if atom.isAppearing():
                 continue
@@ -206,6 +210,8 @@ class Game:
             font = utils.get_font(co.DISCOVER_TEXT_SIZE)
             discovered_surface = font.render('You discovered: {}!'.format(name), False, co.DISCOVER_TEXT_COLOR)
             game_surface.blit(discovered_surface, ((co.WIDTH - discovered_surface.get_width()) // 2, co.DISCOVER_TEXT_Y))
+
+        game_surface.blit(co.RESTART_BTN_TEXTURE, (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_Y))
 
         self.screen.blit(game_surface, next(self.offset))
 
