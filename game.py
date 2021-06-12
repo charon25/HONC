@@ -6,6 +6,7 @@ import pyghelper
 
 from atoms import Atom, Bonding, Carbon, Hydrogen, Nitrogen, Oxygen
 import constants as co
+import utils
 
 
 class Game:
@@ -43,16 +44,19 @@ class Game:
 
         mouse_x, mouse_y = data['pos']
         for atom in self.atoms:
+            if not atom.hasAvailableBonds():
+                continue
             if atom.isTouching(mouse_x, mouse_y):
                 if self.bonding.is_none:
                     self.bonding.enable(atom)
                 else:
-                    if atom.hasAvailableBonds():
-                        atom.bind(self.bonding.atom)
-                        self.bonding.atom.bind(atom)
-                        self.bonding.update_texture(atom.x, atom.y)
-                        self.bonds[id(self.bonding.atom)] = (self.bonding.texture, self.bonding.position)
-                        self.bonding.disable()
+                    atom.bind(self.bonding.atom)
+                    self.bonding.atom.bind(atom)
+                    self.bonding.update_texture(atom.x, atom.y)
+                    self.bonds[id(self.bonding.atom)] = (self.bonding.texture, self.bonding.position)
+                    self.bonding.disable()
+                    if not atom.hasAvailableBonds() and not self.bonding.atom.hasAvailableBonds():
+                        print(utils.get_molecule(atom))
                 break
 
     def mousemove(self, data):

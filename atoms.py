@@ -47,8 +47,19 @@ class Atom:
         if self.type == AtomType.HYDROGEN:
             return co.H_BOND_TEXTURE
 
+    def get_symbol(self):
+        if self.type == AtomType.HYDROGEN:
+            return 'H'
+        elif self.type == AtomType.OXYGEN:
+            return 'O'
+        elif self.type == AtomType.NITROGEN:
+            return 'N'
+        elif self.type == AtomType.CARBON:
+            return 'C'
+
     def bind(self, atom):
         self.bonds.append(atom)
+
 
 class Hydrogen(Atom):
     def __init__(self, x_center, y_center):
