@@ -18,6 +18,8 @@ class GameState(Enum):
 # Général
 BONDING_HEIGHT = [None, 15, 2 * 15 + 10, 3 * 15 + 2 * 10]
 FONT_PATH = 'resources/font/betterpixels.ttf'
+MAX_SCREENSHAKE = 20
+SCREENSHAKE_COUNT = 7
 
 # Spawn atome
 SPAWN_BORDER_MARGIN_TOP = 50

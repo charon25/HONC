@@ -41,6 +41,12 @@ class Game:
         self.star_cooldown = 1
         self.stars = []
 
+        # Screenshake
+        def repeat_00():
+            while True:
+                yield (0, 0)
+        self.offset = repeat_00()
+
         # Jeu
         if not restart:
             self.state: co.GameState = co.GameState.MENU
@@ -123,6 +129,8 @@ class Game:
             except:
                 print("!!!! Unknown formula !!!!")
 
+        self.offset = self.screen_shake(2 * bonds_count)
+
     def click(self, data):
         if data['button'] == 3 and not self.bonding.is_none:
             self.bonding.disable()
@@ -147,34 +155,43 @@ class Game:
             return
         
         self.bonding.update_texture(*data['pos'])
+    
+    def screen_shake(self, bonds_count):
+        if bonds_count > co.MAX_SCREENSHAKE:
+            bonds_count = co.MAX_SCREENSHAKE
+        for _ in range(co.SCREENSHAKE_COUNT):
+            yield (random.randint(-bonds_count, bonds_count), random.randint(-bonds_count, bonds_count))
+        while True:
+            yield (0, 0)
 
-    def draw_score_text(self):
+    def draw_score_text(self, game_surface):
         font = utils.get_font(co.SCORE_TEXT_SIZE)
         score_surface = font.render('Score: {:0.00f}'.format(self.score), False, co.SCORE_TEXT_COLOR)
-        self.screen.blit(score_surface, (co.WIDTH - score_surface.get_width() - co.TEXT_RIGHT_MARGIN, co.SCORE_TEXT_Y))
+        game_surface.blit(score_surface, (co.WIDTH - score_surface.get_width() - co.TEXT_RIGHT_MARGIN, co.SCORE_TEXT_Y))
 
         multipler_surface = font.render('(x{:.01f})'.format(self.multiplier), False, co.MULTIPLIER_TEXT_COLOR(self.multiplier))
-        self.screen.blit(multipler_surface, (co.WIDTH - multipler_surface.get_width() - co.TEXT_RIGHT_MARGIN, co.MULTIPLIER_TEXT_Y))
+        game_surface.blit(multipler_surface, (co.WIDTH - multipler_surface.get_width() - co.TEXT_RIGHT_MARGIN, co.MULTIPLIER_TEXT_Y))
 
     def draw_game(self):
-        self.screen.blit(co.BG_TEXTURE, (0, 0))
+        game_surface = pyg.Surface((co.WIDTH, co.HEIGHT), pyg.SRCALPHA)
+        game_surface.blit(co.BG_TEXTURE, (0, 0))
 
-        self.screen.blits([(star.texture, (star.x, star.y)) for star in self.stars])
+        game_surface.blits([(star.texture, (star.x, star.y)) for star in self.stars])
 
         for _, bonds_dict in self.bonds.items():
             for _, (bond_texture, bond_position) in bonds_dict.items():
-                self.screen.blit(bond_texture, bond_position)
+                game_surface.blit(bond_texture, bond_position)
 
-        self.screen.blits([(atom.get_texture(), atom.getTopLeftCorner()) for atom in self.atoms])
+        game_surface.blits([(atom.get_texture(), atom.getTopLeftCorner()) for atom in self.atoms])
 
         if self.bonding.texture_ready:
-            self.screen.blit(self.bonding.texture, self.bonding.position)
+            game_surface.blit(self.bonding.texture, self.bonding.position)
         
-        self.draw_score_text()
-        utils.draw_text(self.screen, 'Discovered molecules', *co.DISCOVERED_TEXT, [False, False, True])
+        self.draw_score_text(game_surface)
+        utils.draw_text(game_surface, 'Discovered molecules', *co.DISCOVERED_TEXT, [False, False, True])
         for i, formula in enumerate(self.discovered_molecules):
             utils.draw_text(
-                self.screen,
+                game_surface,
                 formula,
                 co.FORMULA_TEXT_SIZE,
                 co.FORMULA_TEXT_POSITION(i),
@@ -184,8 +201,9 @@ class Game:
             name = self.discovered_text[0]
             font = utils.get_font(co.DISCOVER_TEXT_SIZE)
             discovered_surface = font.render('You discovered: {}!'.format(name), False, co.DISCOVER_TEXT_COLOR)
-            self.screen.blit(discovered_surface, ((co.WIDTH - discovered_surface.get_width()) // 2, co.DISCOVER_TEXT_Y))
+            game_surface.blit(discovered_surface, ((co.WIDTH - discovered_surface.get_width()) // 2, co.DISCOVER_TEXT_Y))
 
+        self.screen.blit(game_surface, next(self.offset))
 
     def hydrogen_count(self):
         return sum(type(atom) == Hydrogen for atom in self.atoms)
