@@ -98,6 +98,10 @@ class Game:
         if not molecule.formula in self.discovered_molecules:
             self.discovered_molecules.append(molecule.formula)
             print("New molecule :", molecule.formula)
+            try:
+                print("Name :", co.MOLECULE_NAMES[molecule.formula])
+            except:
+                print("!!!! Unknown formula !!!!")
 
     def click(self, data):
         if data['button'] == 3 and not self.bonding.is_none:
@@ -131,6 +135,16 @@ class Game:
             self.screen.blit(atom.get_texture(), atom.getTopLeftCorner())
         if self.bonding.texture_ready:
             self.screen.blit(self.bonding.texture, self.bonding.position)
+        
+        utils.draw_text(self.screen, 'Discovered molecules :', *co.DISCOVERED_TEXT, [False, False, True])
+        for i, formula in enumerate(self.discovered_molecules):
+            utils.draw_text(
+                self.screen,
+                formula,
+                co.FORMULA_TEXT_SIZE,
+                co.FORMULA_TEXT_POSITION(i),
+                co.FORMULA_TEXT_COLOR
+            )
 
     def spawn_atom(self):
         self.atom_spawn_cooldown -= 1
