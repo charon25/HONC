@@ -13,7 +13,6 @@ class GameState(IntEnum):
     GAME = 0
     MENU = 10
     TUTO = 20
-    END = 30
 
 # Général
 BONDING_HEIGHT = [None, 15, 2 * 15 + 10, 3 * 15 + 2 * 10]
@@ -28,9 +27,9 @@ SPAWN_COLLIDES_MARGIN = 8
 T0_SPAWN = 1.5 * 60
 TINF_SPAWN = 3.5 * 60
 MAX_SPAWN_AT_ONCE = 3
-ONLY_HYDROGEN = 0#3
-ONLY_OXYGEN = ONLY_HYDROGEN + 0#8
-ONLY_NITROGEN = ONLY_OXYGEN + 0#14
+ONLY_HYDROGEN = 0
+ONLY_OXYGEN = ONLY_HYDROGEN + 2
+ONLY_NITROGEN = ONLY_OXYGEN + 4
 
 ATOMS_COUNT_LIMIT = 25
 
@@ -129,12 +128,12 @@ STAR_TEXTURES = [
     for index in range(1, 10)
 ]
 STAR_SPAWN_RADIUS = 200
-STAR_SPEED_MIN = 20
-STAR_SPEED_MAX = 40
+STAR_SPEED_MIN = 5
+STAR_SPEED_MAX = 12
 
 # Score
 SCORE_NEW_MOLECULE = 27.8
-MULTIPLIER_ADD = 0.12
+MULTIPLIER_ADD = 0.09
 MULTIPLIER_DECREASE = 1 - 0.00068
 MULTIPLIER_MIN = 0.2
 
@@ -157,3 +156,45 @@ RESTART_BTN_TEXTURE = pyghelper.Image.create('resources/textures/restart_btn.png
 RESTART_BTN_SIZE = 30
 RESTART_BTN_POS_X = WIDTH - RESTART_BTN_SIZE - 5
 RESTART_BTN_POS_Y = HEIGHT - RESTART_BTN_SIZE - 5
+
+#Menu
+MENU_TEXTURE = pyghelper.Image.create('resources/textures/menu.png')
+## Bouton Menu
+MENU_BTN_X = 252
+MENU_BTN_Y = 356
+MENU_BTN_SIZE = 200
+
+# Tuto
+TUTO_TEXT_SIZE = 40
+TUTO_TEXT_Y = lambda n:165 + 40 * n
+TUTO_FRAMES_TEXTS = [
+    ['Click successively on two atoms', 'to join them together'],
+    ['Each atom has a maximum number of bonds', 'H = 1 | O = 2 | N = 3 | C = 4'],
+    ['You can create double or triple bonds'],
+    [
+        'Score points by creating big molecules',
+        'but don\'t take too much time',
+        'or your multiplier will go down!',
+        '',
+        'You can get bonus points',
+        'by discovering new molecules']
+]
+TUTO_LAST_ATOM_FRAME = 2
+## Frame 0
+TUTO_FRAME0_ATOMS = [
+    (216, HEIGHT // 2),
+    (WIDTH - 216, HEIGHT // 2)
+]
+## Frame 1
+TUTO_FRAME1_ATOMS = [
+    (WIDTH // 2, 350),
+    (216, 500),
+    (WIDTH - 216, 500)
+]
+## Frame 2
+TUTO_FRAME2_ATOMS = [
+    (216, HEIGHT // 2),
+    (WIDTH - 216, HEIGHT // 2)
+]
+## Frame 3
+TUTO_FRAME3_DURATION = int(3.5 * 60)

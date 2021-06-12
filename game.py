@@ -11,6 +11,7 @@ import constants as co
 from molecule import Molecule
 from particle import Particle
 from star import Star
+from tutorial import Tutorial
 import utils
 
 
@@ -21,12 +22,10 @@ class Game:
         # Events
         self.events = pyghelper.EventManager()
         self.events.set_quit_callback(self.stop)
-        self.events.set_mousebuttondown_callback(self.click)
-        self.events.set_mousemotion_callback(self.mousemove)
 
         self.is_ended = False
 
-    def start(self, restart=False):
+    def start(self, restart=False, tuto=False):
         # Atomes
         self.atoms: List[Atom] = list()
         self.bonding: Bonding = Bonding()
@@ -54,19 +53,28 @@ class Game:
         # Jeu
         if not restart:
             self.state: co.GameState = co.GameState.MENU
+        else:
+            if tuto:
+                self.state: co.GameState = co.GameState.TUTO
+                self.tutorial: Tutorial = Tutorial()
+            else:
+                self.state: co.GameState = co.GameState.GAME
+        self.set_callbacks()
         self.weights = [1.0, 0.0, 0.0, 0.0]
         self.score = 0
         self.multiplier = 1.5
         self.discovered_text = None
 
-        self.temp()
-
-
-    def temp(self):
-        # for i in range(10):
-        #     self.atoms.append(Atom.generate_random(self.atoms, [0.25, 0.25, 0.25, 0.25]))
-        
-        self.state = co.GameState.GAME
+    def set_callbacks(self):
+        if self.state == co.GameState.MENU:
+            self.events.set_mousebuttondown_callback(self.click_menu)
+            self.events.set_mousemotion_callback(utils.void)
+        elif self.state == co.GameState.TUTO:
+            self.events.set_mousebuttondown_callback(self.click_game)
+            self.events.set_mousemotion_callback(self.mousemove_game)
+        elif self.state == co.GameState.GAME:
+            self.events.set_mousebuttondown_callback(self.click_game)
+            self.events.set_mousemotion_callback(self.mousemove_game)
 
 
     def stop(self):
@@ -115,6 +123,10 @@ class Game:
 
     def score_molecule(self, molecule: Molecule):
         bonds_count = utils.get_bonds_count_from_formula(molecule.formula)
+        self.offset = self.screen_shake(2 * bonds_count)
+        if self.state == co.GameState.TUTO:
+            return
+
         self.score += bonds_count * self.multiplier
         if bonds_count > 1:
             self.multiplier += co.MULTIPLIER_ADD * bonds_count
@@ -131,17 +143,24 @@ class Game:
             
         self.particles.extend(molecule.particles)
 
-        self.offset = self.screen_shake(2 * bonds_count)
+    def click_menu(self, data):
+        if data['button'] != 1:
+            return
+        
+        mouse_x, mouse_y = data['pos']
+        if co.MENU_BTN_X <= mouse_x <= co.MENU_BTN_X + co.MENU_BTN_SIZE and co.MENU_BTN_Y <= mouse_y <= co.MENU_BTN_Y + co.MENU_BTN_SIZE:
+            self.start(restart=True, tuto=False)
 
-    def click(self, data):
-        if data['button'] == 3 and not self.bonding.is_none:
-            self.bonding.disable()
+    def click_game(self, data):
+        if data['button'] == 3:
+            if not self.bonding.is_none:
+                self.bonding.disable()
             return
 
         mouse_x, mouse_y = data['pos']
 
         if co.RESTART_BTN_POS_X <= mouse_x <= co.RESTART_BTN_POS_Y + co.RESTART_BTN_SIZE and co.RESTART_BTN_POS_Y <= mouse_y <= co.RESTART_BTN_POS_X + co.RESTART_BTN_SIZE:
-            self.start(restart=True)
+            self.start(restart=True, tuto=(self.state == co.GameState.TUTO))
 
         for atom in self.atoms:
             if atom.isAppearing():
@@ -156,7 +175,7 @@ class Game:
                         self.create_bond(atom)
                 break
 
-    def mousemove(self, data):
+    def mousemove_game(self, data):
         if self.bonding.is_none:
             return
         
@@ -170,6 +189,9 @@ class Game:
         while True:
             yield (0, 0)
 
+    def get_named_molecules_count(self):
+        return sum(formula in co.MOLECULE_NAMES for formula in self.discovered_molecules)
+
     def draw_score_text(self, game_surface):
         font = utils.get_font(co.SCORE_TEXT_SIZE)
         score_surface = font.render('Score: {:0.00f}'.format(self.score), False, co.SCORE_TEXT_COLOR)
@@ -178,11 +200,29 @@ class Game:
         multipler_surface = font.render('(x{:.01f})'.format(self.multiplier), False, co.MULTIPLIER_TEXT_COLOR(self.multiplier))
         game_surface.blit(multipler_surface, (co.WIDTH - multipler_surface.get_width() - co.TEXT_RIGHT_MARGIN, co.MULTIPLIER_TEXT_Y))
 
-    def draw_game(self):
+    def draw_game(self, tuto=False):
         game_surface = pyg.Surface((co.WIDTH, co.HEIGHT), pyg.SRCALPHA)
-        game_surface.blit(co.BG_TEXTURE, (0, 0))
+        game_surface.blit(co.BG_TEXTURE if not tuto else self.tutorial.texture, (0, 0))
 
         game_surface.blits([(star.texture, (star.x, star.y)) for star in self.stars])
+        
+        if not tuto:
+            self.draw_score_text(game_surface)
+            utils.draw_text(game_surface, 'Discovered molecules ({}/{})'.format(self.get_named_molecules_count(), len(co.MOLECULE_NAMES)), *co.DISCOVERED_TEXT, [False, False, True])
+            for i, formula in enumerate(self.discovered_molecules):
+                utils.draw_text(
+                    game_surface,
+                    '{} ({})'.format(formula, co.MOLECULE_NAMES[formula]) if formula in co.MOLECULE_NAMES else formula,
+                    co.FORMULA_TEXT_SIZE,
+                    co.FORMULA_TEXT_POSITION(i),
+                    co.FORMULA_TEXT_COLOR(self.discovered_molecules_bonds_count[formula])
+                )
+            if self.discovered_text is not None:
+                name = self.discovered_text[0]
+                font = utils.get_font(co.DISCOVER_TEXT_SIZE)
+                discovered_surface = font.render('You discovered: {}!'.format(name), False, co.DISCOVER_TEXT_COLOR)
+                game_surface.blit(discovered_surface, ((co.WIDTH - discovered_surface.get_width()) // 2, co.DISCOVER_TEXT_Y))
+
 
         game_surface.blits([(particle.texture, (particle.x, particle.y)) for particle in self.particles])
 
@@ -194,27 +234,17 @@ class Game:
 
         if self.bonding.texture_ready:
             game_surface.blit(self.bonding.texture, self.bonding.position)
-        
-        self.draw_score_text(game_surface)
-        utils.draw_text(game_surface, 'Discovered molecules', *co.DISCOVERED_TEXT, [False, False, True])
-        for i, formula in enumerate(self.discovered_molecules):
-            utils.draw_text(
-                game_surface,
-                formula,
-                co.FORMULA_TEXT_SIZE,
-                co.FORMULA_TEXT_POSITION(i),
-                co.FORMULA_TEXT_COLOR(self.discovered_molecules_bonds_count[formula])
-            )
-        if self.discovered_text is not None:
-            name = self.discovered_text[0]
-            font = utils.get_font(co.DISCOVER_TEXT_SIZE)
-            discovered_surface = font.render('You discovered: {}!'.format(name), False, co.DISCOVER_TEXT_COLOR)
-            game_surface.blit(discovered_surface, ((co.WIDTH - discovered_surface.get_width()) // 2, co.DISCOVER_TEXT_Y))
 
         game_surface.blit(co.RESTART_BTN_TEXTURE, (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_Y))
 
         self.screen.blit(game_surface, next(self.offset))
 
+    def draw_menu(self):
+        self.screen.blit(co.BG_TEXTURE, (0, 0))
+        
+        self.screen.blits([(star.texture, (star.x, star.y)) for star in self.stars])
+
+        self.screen.blit(co.MENU_TEXTURE, (0, 0))
 
     def hydrogen_count(self):
         return sum(type(atom) == Hydrogen for atom in self.atoms)
@@ -256,7 +286,7 @@ class Game:
             if star.out:
                 self.stars.remove(star)
     
-    def loop_game(self):
+    def loop_game(self, tuto=False):
         for atom in self.atoms:
             if not atom.isAppearing():
                 continue
@@ -267,28 +297,39 @@ class Game:
             if particle.done:
                 self.particles.remove(particle)
 
-        self.spawn_atom()
-        self.spawn_star()
-        self.manage_stars()
+        if not tuto:
+            self.spawn_atom()
 
-        if self.multiplier > co.MULTIPLIER_MIN:
-            self.multiplier *= co.MULTIPLIER_DECREASE
-        if self.discovered_text is not None:
-            self.discovered_text[1] -= 1
-            if self.discovered_text[1] <= 0:
-                self.discovered_text = None
-        self.draw_game()
+            if self.multiplier > co.MULTIPLIER_MIN:
+                self.multiplier *= co.MULTIPLIER_DECREASE
+            if self.discovered_text is not None:
+                self.discovered_text[1] -= 1
+                if self.discovered_text[1] <= 0:
+                    self.discovered_text = None
+
+        if tuto:
+            self.tutorial.age()
+            if not self.tutorial.used:
+                self.atoms.extend(self.tutorial.get_atoms())
+            if self.tutorial.frame <= co.TUTO_LAST_ATOM_FRAME:
+                if len(self.atoms) == 0:
+                    self.tutorial.set_frame(self.tutorial.frame + 1)
+            else:
+                if self.tutorial.cooldown <= 0:
+                    self.start(restart=True, tuto=False)
+
+        self.draw_game(tuto)
 
     def loop(self):
         self.clock.tick(60)
         self.events.listen()
+        self.manage_stars()
+        self.spawn_star()
         if self.state == co.GameState.GAME:
             self.loop_game()
-        elif self.state == co.GameState.END:
-            pass
         elif self.state == co.GameState.MENU:
-            pass
+            self.draw_menu()
         elif self.state == co.GameState.TUTO:
-            pass
+            self.loop_game(True)
         
         pyg.display.update()

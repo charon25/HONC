@@ -49,3 +49,6 @@ def generate_pos_velocity_in_disk(disk_radius, x_center, y_center, vx, vy):
         vx * math.cos(angle),
         vy * math.sin(angle)
     )
+
+def void(args):
+    pass
