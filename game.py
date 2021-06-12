@@ -1,10 +1,10 @@
 import math
-from typing import List
+from typing import List, Dict
 
 import pygame as pyg
 import pyghelper
 
-from atoms import Atom, Hydrogen, Nitrogen, Carbon
+from atoms import Atom, Bonding, Carbon, Hydrogen, Nitrogen, Oxygen
 import constants as co
 
 
@@ -22,46 +22,52 @@ class Game:
 
     def start(self):
         self.atoms: List[Atom] = []
-        self.bonding = None
-        self.bonding_texture = None
+        self.bonding: Bonding = Bonding()
+        self.bonds: Dict[int, List[pyg.Surface, List[int]]] = {}
 
         self.temp()
     
     def temp(self):
         self.atoms.append(Hydrogen(0, 0))
-        self.atoms.append(Carbon(100, 100))
+        self.atoms.append(Carbon(350, 350))
 
     def stop(self):
         self.is_ended = True
         pyghelper.Window.close()
 
     def click(self, data):
+        if data['button'] == 3 and not self.bonding.is_none:
+            self.bonding.disable()
+            return
+
         mouse_x, mouse_y = data['pos']
         for atom in self.atoms:
             if atom.isTouching(mouse_x, mouse_y):
-                if self.bonding is None:
-                    self.bonding = atom
+                if self.bonding.is_none:
+                    self.bonding.enable(atom)
                 else:
-                    pass # Create the bond and set bonding to None if bond is succesful
+                    if atom.hasAvailableBonds():
+                        atom.bind(self.bonding.atom)
+                        self.bonding.atom.bind(atom)
+                        self.bonding.update_texture(atom.x, atom.y)
+                        self.bonds[id(self.bonding.atom)] = (self.bonding.texture, self.bonding.position)
+                        self.bonding.disable()
                 break
 
     def mousemove(self, data):
-        if self.bonding is None:
+        if self.bonding.is_none:
             return
         
-        mouse_x, mouse_y = data['pos']
-        atom_x, atom_y = self.bonding.x, self.bonding.y
-        distance = math.dist((mouse_x, mouse_y), (atom_x, atom_y))
-        angle = -math.atan2(mouse_y - atom_y, mouse_x - atom_x) * 180 / math.pi
-        self.bonding_texture = pyg.transform.rotozoom(co.H_BOND_TEXTURE, angle, distance / 50)
+        self.bonding.update_texture(*data['pos'])
 
     def draw(self):
         self.screen.blit(co.BG_TEXTURE, (0, 0))
+        for _, (bond_texture, bond_position) in self.bonds.items():
+            self.screen.blit(bond_texture, bond_position)
         for atom in self.atoms:
-            self.screen.blit(atom.texture, atom.getTopLeftCorner())
-        if self.bonding is not None and self.bonding_texture is not None:
-            self.screen.blit(self.bonding_texture, self.bonding.getTopLeftCorner())
-            # self.screen.blit()
+            self.screen.blit(atom.get_texture(), atom.getTopLeftCorner())
+        if self.bonding.texture_ready:
+            self.screen.blit(self.bonding.texture, self.bonding.position)
 
     def loop(self):
         self.clock.tick(60)
