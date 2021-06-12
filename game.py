@@ -6,7 +6,7 @@ import pyghelper
 
 from atoms import Atom, Bonding, Carbon, Hydrogen, Nitrogen, Oxygen
 import constants as co
-import utils
+from molecule import Molecule
 
 
 class Game:
@@ -25,6 +25,7 @@ class Game:
         self.atoms: List[Atom] = []
         self.bonding: Bonding = Bonding()
         self.bonds: Dict[int, List[pyg.Surface, List[int]]] = {}
+        self.discovered_molecules: List[str] = []
 
         self.temp()
     
@@ -32,10 +33,35 @@ class Game:
         self.atoms.append(Hydrogen(500, 350))
         self.atoms.append(Hydrogen(200, 350))
         self.atoms.append(Oxygen(350, 200))
+        self.atoms.append(Oxygen(350, 400))
 
     def stop(self):
         self.is_ended = True
         pyghelper.Window.close()
+
+    def create_bond(self, atom):
+        atom.bind(self.bonding.atom)        
+        self.bonding.atom.bind(atom)
+        self.bonding.update_texture(atom.x, atom.y)
+        self.bonds[id(self.bonding.atom)] = (self.bonding.texture, self.bonding.position)
+        self.bonding.disable()
+        if not atom.hasAvailableBonds() and not self.bonding.atom.hasAvailableBonds():
+            molecule = Molecule.create_molecule(atom)
+            if not molecule:
+                return
+            self.remove_atoms(molecule)
+            self.score_molecule(molecule)
+
+    def remove_atoms(self, molecule: Molecule):
+        for atom in molecule.atoms:
+            if id(atom) in self.bonds:
+                self.bonds.pop(id(atom))
+            self.atoms.remove(atom)
+
+    def score_molecule(self, molecule: Molecule):
+        if not molecule.formula in self.discovered_molecules:
+            self.discovered_molecules.append(molecule.formula)
+            print("New molecule :", molecule.formula)
 
     def click(self, data):
         if data['button'] == 3 and not self.bonding.is_none:
@@ -50,13 +76,7 @@ class Game:
                 if self.bonding.is_none:
                     self.bonding.enable(atom)
                 else:
-                    atom.bind(self.bonding.atom)
-                    self.bonding.atom.bind(atom)
-                    self.bonding.update_texture(atom.x, atom.y)
-                    self.bonds[id(self.bonding.atom)] = (self.bonding.texture, self.bonding.position)
-                    self.bonding.disable()
-                    if not atom.hasAvailableBonds() and not self.bonding.atom.hasAvailableBonds():
-                        print(utils.get_molecule(atom))
+                    self.create_bond(atom)
                 break
 
     def mousemove(self, data):
