@@ -28,8 +28,9 @@ class Game:
         self.temp()
     
     def temp(self):
-        self.atoms.append(Hydrogen(0, 0))
-        self.atoms.append(Carbon(350, 350))
+        self.atoms.append(Hydrogen(500, 350))
+        self.atoms.append(Hydrogen(200, 350))
+        self.atoms.append(Oxygen(350, 200))
 
     def stop(self):
         self.is_ended = True
