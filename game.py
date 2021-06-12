@@ -1,4 +1,5 @@
 import math
+import random
 from typing import List, Dict
 
 import pygame as pyg
@@ -8,6 +9,7 @@ from atoms import Atom, Carbon, Hydrogen, Nitrogen, Oxygen
 from bonding import Bonding
 import constants as co
 from molecule import Molecule
+import utils
 
 
 class Game:
@@ -22,21 +24,31 @@ class Game:
 
         self.is_ended = False
 
-    def start(self):
+    def start(self, restart=False):
+        # Atomes
         self.atoms: List[Atom] = []
         self.bonding: Bonding = Bonding()
         self.bonds: Dict[int, Dict[int, List[pyg.Surface, List[int]]]] = dict()
         self.discovered_molecules: List[str] = []
+        self.total_atoms_count = 0
+
+        # Spawn
+        self.atom_spawn_cooldown = utils.atom_mean_over_time(0)
+
+        # Jeu
+        if not restart:
+            self.state: co.GameState = co.GameState.MENU
+        self.weights = [1.0, 0.0, 0.0, 0.0]
 
         self.temp()
-    
+
+
     def temp(self):
-        for i in range(10):
-            self.atoms.append(Atom.generate_random(self.atoms, [0.25, 0.25, 0.25, 0.25]))
-        # self.atoms.append(Hydrogen(500, 350))
-        # self.atoms.append(Hydrogen(200, 350))
-        # self.atoms.append(Carbon(350, 200))
-        # self.atoms.append(Carbon(350, 400))
+        # for i in range(10):
+        #     self.atoms.append(Atom.generate_random(self.atoms, [0.25, 0.25, 0.25, 0.25]))
+        
+        self.state = co.GameState.GAME
+
 
     def stop(self):
         self.is_ended = True
@@ -55,8 +67,6 @@ class Game:
         index_1, index_2 = id(atom_1), id(atom_2)
         if index_1 < index_2:
             index_1, index_2 = index_2, index_1
-        
-
 
     def create_bond(self, atom: Atom):
         multiplicity = atom.get_multiplicity(self.bonding.atom)
@@ -112,7 +122,7 @@ class Game:
         
         self.bonding.update_texture(*data['pos'])
 
-    def draw(self):
+    def draw_game(self):
         self.screen.blit(co.BG_TEXTURE, (0, 0))
         for _, bonds_dict in self.bonds.items():
             for _, (bond_texture, bond_position) in bonds_dict.items():
@@ -122,8 +132,30 @@ class Game:
         if self.bonding.texture_ready:
             self.screen.blit(self.bonding.texture, self.bonding.position)
 
+    def spawn_atom(self):
+        self.atom_spawn_cooldown -= 1
+        if self.atom_spawn_cooldown <= 0:
+            self.atom_spawn_cooldown = random.gauss(utils.atom_mean_over_time(self.total_atoms_count), 1.0)
+            if len(self.atoms) >= co.ATOMS_COUNT_LIMIT:
+                return
+            spawn_count = 1 + random.randrange(0, co.MAX_SPAWN_AT_ONCE)
+            for _ in range(spawn_count):
+                self.atoms.append(Atom.generate_random(self.atoms, self.weights))
+            self.weights = utils.weights_over_time(self.total_atoms_count)
+            self.total_atoms_count += spawn_count
+
+    
     def loop(self):
         self.clock.tick(60)
         self.events.listen()
-        self.draw()
+        if self.state == co.GameState.GAME:
+            self.draw_game()
+            self.spawn_atom()
+        elif self.state == co.GameState.END:
+            pass
+        elif self.state == co.GameState.MENU:
+            pass
+        elif self.state == co.GameState.TUTO:
+            pass
+        
         pyg.display.update()
