@@ -9,6 +9,7 @@ from atoms import Atom, Carbon, Hydrogen, Nitrogen, Oxygen
 from bonding import Bonding
 import constants as co
 from molecule import Molecule
+from star import Star
 import utils
 
 
@@ -34,6 +35,10 @@ class Game:
 
         # Spawn
         self.atom_spawn_cooldown = utils.atom_mean_over_time(0)
+
+        # Etoiles
+        self.star_cooldown = 1
+        self.stars = []
 
         # Jeu
         if not restart:
@@ -128,11 +133,17 @@ class Game:
 
     def draw_game(self):
         self.screen.blit(co.BG_TEXTURE, (0, 0))
+
+        for star in self.stars:
+            self.screen.blit(star.texture, (star.x, star.y))
+
         for _, bonds_dict in self.bonds.items():
             for _, (bond_texture, bond_position) in bonds_dict.items():
                 self.screen.blit(bond_texture, bond_position)
+
         for atom in self.atoms:
             self.screen.blit(atom.get_texture(), atom.getTopLeftCorner())
+
         if self.bonding.texture_ready:
             self.screen.blit(self.bonding.texture, self.bonding.position)
         
@@ -158,6 +169,18 @@ class Game:
             self.weights = utils.weights_over_time(self.total_atoms_count)
             self.total_atoms_count += spawn_count
 
+    def spawn_star(self):
+        self.star_cooldown -= 1
+        if self.star_cooldown <= 0:
+            self.star_cooldown = 1
+            for i in range(3):
+                radius = co.STAR_SPAWN_RADIUS * random.random()
+                angle = random.random() * 2 * math.pi
+                star_x, star_y = co.WIDTH // 2 + radius * math.cos(angle), co.HEIGHT // 2 + radius * math.sin(angle)
+                star_vx = random.randint(co.STAR_SPEED_MIN, co.STAR_SPEED_MAX) * math.cos(angle)
+                star_vy = random.randint(co.STAR_SPEED_MIN, co.STAR_SPEED_MAX) * math.sin(angle)
+                star_texture = co.STAR_TEXTURES[random.randrange(0, 9)]
+                self.stars.append(Star(star_x, star_y, star_vx, star_vy, star_texture))
     
     def loop(self):
         self.clock.tick(60)
@@ -165,6 +188,10 @@ class Game:
         if self.state == co.GameState.GAME:
             self.draw_game()
             self.spawn_atom()
+            self.spawn_star()
+            for star in self.stars:
+                star.move()
+            self.stars = [star for star in self.stars if not star.out]
         elif self.state == co.GameState.END:
             pass
         elif self.state == co.GameState.MENU:

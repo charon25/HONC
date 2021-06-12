@@ -100,3 +100,12 @@ C_BOND_TEXTURES = [None,
     pyghelper.Image.create('resources/textures/bonds/carbon_double_bond.png'),
     pyghelper.Image.create('resources/textures/bonds/carbon_triple_bond.png'),
 ]
+
+# Etoile
+STAR_TEXTURES = [
+    pyghelper.Image.create('resources/textures/stars/{}.png'.format(index))
+    for index in range(1, 10)
+]
+STAR_SPAWN_RADIUS = 200
+STAR_SPEED_MIN = 20
+STAR_SPEED_MAX = 40
