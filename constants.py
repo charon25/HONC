@@ -34,9 +34,9 @@ SPAWN_COLLIDES_MARGIN = 8
 T0_SPAWN = 1.5 * 60
 TINF_SPAWN = 3.5 * 60
 MAX_SPAWN_AT_ONCE = 3
-ONLY_HYDROGEN = 3
-ONLY_OXYGEN = ONLY_HYDROGEN + 8
-ONLY_NITROGEN = ONLY_OXYGEN + 14
+ONLY_HYDROGEN = 0#3
+ONLY_OXYGEN = ONLY_HYDROGEN + 0#8
+ONLY_NITROGEN = ONLY_OXYGEN + 0#14
 
 ATOMS_COUNT_LIMIT = 25
 
@@ -49,7 +49,10 @@ FORMULA_TEXT_COLOR = (0, 0, 0)
 # Hydrogène
 H_RADIUS = 30
 H_BONDS = 1
-H_TEXTURE = pyghelper.Image.create('resources/textures/atoms/hydrogen.png')
+H_TEXTURES = [
+    pyghelper.Image.create('resources/textures/atoms/hydrogen/hydrogen_0_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/hydrogen/hydrogen_1_bond.png')
+]
 H_BOND_TEXTURES = [None,
     pyghelper.Image.create('resources/textures/bonds/hydrogen_bond.png')
 ]
@@ -57,7 +60,11 @@ H_BOND_TEXTURES = [None,
 # Oxygène
 O_RADIUS = 35
 O_BONDS = 2
-O_TEXTURE = pyghelper.Image.create('resources/textures/atoms/oxygen.png')
+O_TEXTURES = [
+    pyghelper.Image.create('resources/textures/atoms/oxygen/oxygen_0_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/oxygen/oxygen_1_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/oxygen/oxygen_2_bond.png')
+]
 O_BOND_TEXTURES = [None,
     pyghelper.Image.create('resources/textures/bonds/oxygen_bond.png'),
     pyghelper.Image.create('resources/textures/bonds/oxygen_double_bond.png'),
@@ -66,7 +73,12 @@ O_BOND_TEXTURES = [None,
 # Azote
 N_RADIUS = 40
 N_BONDS = 3
-N_TEXTURE = pyghelper.Image.create('resources/textures/atoms/nitrogen.png')
+N_TEXTURES = [
+    pyghelper.Image.create('resources/textures/atoms/nitrogen/nitrogen_0_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/nitrogen/nitrogen_1_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/nitrogen/nitrogen_2_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/nitrogen/nitrogen_3_bond.png')
+]
 N_BOND_TEXTURES = [None,
     pyghelper.Image.create('resources/textures/bonds/nitrogen_bond.png'),
     pyghelper.Image.create('resources/textures/bonds/nitrogen_double_bond.png'),
@@ -76,7 +88,13 @@ N_BOND_TEXTURES = [None,
 # Carbone
 C_RADIUS = 45
 C_BONDS = 4
-C_TEXTURE = pyghelper.Image.create('resources/textures/atoms/carbon.png')
+C_TEXTURES = [
+    pyghelper.Image.create('resources/textures/atoms/carbon/carbon_0_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/carbon/carbon_1_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/carbon/carbon_2_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/carbon/carbon_3_bond.png'),
+    pyghelper.Image.create('resources/textures/atoms/carbon/carbon_4_bond.png')
+]
 C_BOND_TEXTURES = [None,
     pyghelper.Image.create('resources/textures/bonds/carbon_bond.png'),
     pyghelper.Image.create('resources/textures/bonds/carbon_double_bond.png'),

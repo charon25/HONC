@@ -38,13 +38,13 @@ class Atom:
 
     def get_texture(self):
         if self.type == AtomType.HYDROGEN:
-            return co.H_TEXTURE
+            return co.H_TEXTURES[len(self.bonds)]
         elif self.type == AtomType.OXYGEN:
-            return co.O_TEXTURE
+            return co.O_TEXTURES[len(self.bonds)]
         elif self.type == AtomType.NITROGEN:
-            return co.N_TEXTURE
+            return co.N_TEXTURES[len(self.bonds)]
         elif self.type == AtomType.CARBON:
-            return co.C_TEXTURE
+            return co.C_TEXTURES[len(self.bonds)]
 
     def get_bond_texture(self, multiplicity):
         if self.type == AtomType.HYDROGEN:
