@@ -9,6 +9,7 @@ from atoms import Atom, Carbon, Hydrogen, Nitrogen, Oxygen
 from bonding import Bonding
 import constants as co
 from molecule import Molecule
+from particle import Particle
 from star import Star
 import utils
 
@@ -39,13 +40,16 @@ class Game:
 
         # Etoiles
         self.star_cooldown = 1
-        self.stars = []
+        self.stars: List[Star] = list()
 
         # Screenshake
         def repeat_00():
             while True:
                 yield (0, 0)
         self.offset = repeat_00()
+
+        # Particules
+        self.particles: List[Particle] = list()
 
         # Jeu
         if not restart:
@@ -117,17 +121,15 @@ class Game:
 
         if not molecule.formula in self.discovered_molecules:
             self.discovered_molecules.append(molecule.formula)
-            self.discovered_molecules_bonds_count[molecule.formula] = bonds_count
             self.discovered_molecules.sort(key=lambda formula:utils.get_bonds_count_from_formula(formula), reverse=True)
-            self.score += co.SCORE_NEW_MOLECULE
+            self.discovered_molecules_bonds_count[molecule.formula] = bonds_count
+            
             molecule_name = co.MOLECULE_NAMES[molecule.formula] if molecule.formula in co.MOLECULE_NAMES else molecule.formula
             self.discovered_text = [molecule_name, co.DISCOVER_TEXT_DURATION]
             
-            print("New molecule :", molecule.formula)
-            try:
-                print("Name :", co.MOLECULE_NAMES[molecule.formula])
-            except:
-                print("!!!! Unknown formula !!!!")
+            self.score += co.SCORE_NEW_MOLECULE
+            
+        self.particles.extend(molecule.particles)
 
         self.offset = self.screen_shake(2 * bonds_count)
 
@@ -178,6 +180,8 @@ class Game:
 
         game_surface.blits([(star.texture, (star.x, star.y)) for star in self.stars])
 
+        game_surface.blits([(particle.texture, (particle.x, particle.y)) for particle in self.particles])
+
         for _, bonds_dict in self.bonds.items():
             for _, (bond_texture, bond_position) in bonds_dict.items():
                 game_surface.blit(bond_texture, bond_position)
@@ -205,6 +209,7 @@ class Game:
 
         self.screen.blit(game_surface, next(self.offset))
 
+
     def hydrogen_count(self):
         return sum(type(atom) == Hydrogen for atom in self.atoms)
 
@@ -229,11 +234,13 @@ class Game:
             if len(self.stars) > 25:
                 return
             for i in range(3):
-                radius = co.STAR_SPAWN_RADIUS * random.random()
-                angle = random.random() * 2 * math.pi
-                star_x, star_y = co.WIDTH // 2 + radius * math.cos(angle), co.HEIGHT // 2 + radius * math.sin(angle)
-                star_vx = random.randint(co.STAR_SPEED_MIN, co.STAR_SPEED_MAX) * math.cos(angle)
-                star_vy = random.randint(co.STAR_SPEED_MIN, co.STAR_SPEED_MAX) * math.sin(angle)
+                star_x, star_y, star_vx, star_vy = utils.generate_pos_velocity_in_disk(
+                    co.STAR_SPAWN_RADIUS,
+                    co.WIDTH // 2,
+                    co.HEIGHT // 2,
+                    random.randint(co.STAR_SPEED_MIN, co.STAR_SPEED_MAX),
+                    random.randint(co.STAR_SPEED_MIN, co.STAR_SPEED_MAX)
+                )
                 star_texture = co.STAR_TEXTURES[random.randrange(0, 9)]
                 self.stars.append(Star(star_x, star_y, star_vx, star_vy, star_texture))
 
@@ -248,6 +255,11 @@ class Game:
             if not atom.isAppearing():
                 continue
             atom.appear()
+        
+        for particle in self.particles:
+            particle.age()
+            if particle.done:
+                self.particles.remove(particle)
 
         self.spawn_atom()
         self.spawn_star()
@@ -260,6 +272,7 @@ class Game:
             if self.discovered_text[1] <= 0:
                 self.discovered_text = None
         self.draw_game()
+
     def loop(self):
         self.clock.tick(60)
         self.events.listen()

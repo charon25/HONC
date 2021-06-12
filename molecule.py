@@ -1,9 +1,13 @@
+import random
 from typing import List
 
 import pygame as pyg
 import pyghelper
 
 from atoms import Atom
+import constants as co
+from particle import Particle
+import utils
 
 class Molecule:
     def __init__(self):
@@ -17,6 +21,7 @@ class Molecule:
     def end(self):
         self.formula = Molecule.get_formula(self)
         self.bonds_count = Molecule.get_bonds_count(self)
+        self.particles = Molecule.generate_particles(self)
 
     @staticmethod
     def create_molecule(starting_atom: Atom):
@@ -61,3 +66,18 @@ class Molecule:
             count += atom.max_bonds
 
         return count // 2
+
+    @staticmethod
+    def generate_particles(molecule):
+        particles = []
+        for atom in molecule.atoms:
+            n = random.randint(co.PARTICLE_COUNT_BY_ATOM[atom.type.value] - 2, co.PARTICLE_COUNT_BY_ATOM[atom.type.value] + 2)
+            for _ in range(n):
+                part_x, part_y, part_vx, part_vy = utils.generate_pos_velocity_in_disk(
+                    atom.radius,
+                    atom.x, atom.y,
+                    random.randint(-1, 1), random.randint(-1, 1)
+                )
+                particles.append(Particle(part_x, part_y, part_vx, part_vy, co.PARTICLE_TEXTURES[random.randrange(3)]))
+        
+        return particles

@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum
 
 import pyghelper
 
@@ -9,7 +9,7 @@ HEIGHT = 700
 BG_TEXTURE = pyghelper.Image.create('resources/textures/bg.png')
 
 # Etat de jeu
-class GameState(Enum):
+class GameState(IntEnum):
     GAME = 0
     MENU = 10
     TUTO = 20
@@ -143,3 +143,11 @@ DISCOVER_TEXT_DURATION = 60 * 3
 DISCOVER_TEXT_SIZE = 35
 DISCOVER_TEXT_Y = 665
 DISCOVER_TEXT_COLOR = (120, 120, 200)
+
+# Particules
+PARTICLE_TEXTURES = [
+    pyghelper.Image.create('resources/textures/particles/{}.png'.format(index))
+    for index in range(1, 4)
+]
+PARTICLE_DURATION = int(0.4 * 60)
+PARTICLE_COUNT_BY_ATOM = [None, 4, 6, 8, 10]

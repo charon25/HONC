@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum
 import math
 import random
 from typing import List
@@ -8,7 +8,7 @@ import pyghelper
 
 import constants as co
 
-class AtomType(Enum):
+class AtomType(IntEnum):
     HYDROGEN = co.H_BONDS
     OXYGEN = co.O_BONDS
     NITROGEN = co.N_BONDS

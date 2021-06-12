@@ -1,3 +1,6 @@
+import math
+import random
+
 import pygame as pyg
 import re
 
@@ -35,3 +38,14 @@ def draw_text(screen, text, size, pos, color, flags=[]):
 
 def get_bonds_count_from_formula(formula):
     return sum(co.ATOM_BONDS_COUNT[atom] * (int(count) if count != '' else 1) for atom, count in re.findall(r'(\w)(\d?)', formula)) // 2
+
+def generate_pos_velocity_in_disk(disk_radius, x_center, y_center, vx, vy):
+    radius = disk_radius * random.random()
+    angle = random.random() * 2 * math.pi
+
+    return (
+        x_center + radius * math.cos(angle),
+        y_center + radius * math.sin(angle),
+        vx * math.cos(angle),
+        vy * math.sin(angle)
+    )
