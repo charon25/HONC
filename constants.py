@@ -19,17 +19,9 @@ class GameState(Enum):
 BONDING_HEIGHT = [None, 15, 2 * 15 + 10, 3 * 15 + 2 * 10]
 FONT_PATH = 'resources/font/betterpixels.ttf'
 
-# Molécules
-MOLECULE_NAMES = dict()
-try:
-    with open('resources/molecules.txt', 'r') as fi:
-        for line in fi.readlines():
-            formula, name = line.strip().split('\t')
-            MOLECULE_NAMES[formula] = name
-except:pass
-
 # Spawn atome
-SPAWN_BORDER_MARGIN = 30
+SPAWN_BORDER_MARGIN_TOP = 50
+SPAWN_BORDER_MARGIN_LEFT = 100
 SPAWN_COLLIDES_MARGIN = 8
 T0_SPAWN = 1.5 * 60
 TINF_SPAWN = 3.5 * 60
@@ -40,11 +32,26 @@ ONLY_NITROGEN = ONLY_OXYGEN + 0#14
 
 ATOMS_COUNT_LIMIT = 25
 
-# Texte
-DISCOVERED_TEXT = (40, (10, 10), (0, 0, 0)) # Taille, position, couleur
+# Textes
+DISCOVERED_TEXT = (40, (10, 10), (200, 200, 200)) # Taille, position, couleur
+## Score
+TEXT_RIGHT_MARGIN = 10
+SCORE_TEXT_Y = 10
+SCORE_TEXT_SIZE = 40
+SCORE_TEXT_COLOR = (200, 200, 200)
+
+## Multiplier
+MULTIPLIER_TEXT_Y = 40
+def MULTIPLIER_TEXT_COLOR(multiplier):
+    intensity = max(0, min(200, 200 / multiplier))
+    return (200, intensity, intensity)
+
+## Formules
 FORMULA_TEXT_SIZE = 30
-FORMULA_TEXT_POSITION = lambda n:(10, 45 + 20 * n)
-FORMULA_TEXT_COLOR = (0, 0, 0)
+FORMULA_TEXT_POSITION = lambda n:(10, 55 + 20 * n)
+def FORMULA_TEXT_COLOR(bonds_count):
+    intensity = max(0, 200 - 20 * bonds_count)
+    return (200, 200, intensity)
 
 # Hydrogène
 H_RADIUS = 30
@@ -101,6 +108,16 @@ C_BOND_TEXTURES = [None,
     pyghelper.Image.create('resources/textures/bonds/carbon_triple_bond.png'),
 ]
 
+# Molécules
+MOLECULE_NAMES = dict()
+ATOM_BONDS_COUNT = {'C': C_BONDS, 'H': H_BONDS, 'N': N_BONDS, 'O': O_BONDS}
+try:
+    with open('resources/molecules.txt', 'r') as fi:
+        for line in fi.readlines():
+            formula, name = line.strip().split('\t')
+            MOLECULE_NAMES[formula] = name
+except:pass
+
 # Etoile
 STAR_TEXTURES = [
     pyghelper.Image.create('resources/textures/stars/{}.png'.format(index))
@@ -109,3 +126,15 @@ STAR_TEXTURES = [
 STAR_SPAWN_RADIUS = 200
 STAR_SPEED_MIN = 20
 STAR_SPEED_MAX = 40
+
+# Score
+SCORE_NEW_MOLECULE = 27.8
+MULTIPLIER_ADD = 0.12
+MULTIPLIER_DECREASE = 1 - 0.00068
+MULTIPLIER_MIN = 0.2
+
+# Texte découverte
+DISCOVER_TEXT_DURATION = 60 * 3
+DISCOVER_TEXT_SIZE = 35
+DISCOVER_TEXT_Y = 665
+DISCOVER_TEXT_COLOR = (120, 120, 200)

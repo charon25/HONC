@@ -1,4 +1,5 @@
 import pygame as pyg
+import re
 
 import constants as co
 
@@ -13,9 +14,9 @@ def weights_over_time(n):
         return [6 / 12, 6 / 12, 0, 0]
     if n < co.ONLY_NITROGEN:
         return [16 / 41, 16 / 41, 9 / 41, 0]
-    return [54 / 123, 33 / 123, 21 / 123, 15 / 123]
+    return [45 / 123, 36 / 123, 24 / 123, 18 / 123]
 
-def get_font(size, bold, italic, underline):
+def get_font(size, bold=False, italic=False, underline=False):
     try:
         font = pyg.font.Font(co.FONT_PATH, size)
     except:
@@ -31,3 +32,6 @@ def draw_text(screen, text, size, pos, color, flags=[]):
     font: pyg.font.Font = get_font(size, flags[0], flags[1], flags[2])
     img = font.render(text, False, color)
     screen.blit(img, pos)
+
+def get_bonds_count_from_formula(formula):
+    return sum(co.ATOM_BONDS_COUNT[atom] * (int(count) if count != '' else 1) for atom, count in re.findall(r'(\w)(\d?)', formula)) // 2

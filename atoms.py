@@ -85,6 +85,11 @@ class Atom:
         else:
             return Carbon.generate_random(previous_atoms)
 
+    @staticmethod
+    def generate_random_position(radius):
+        x = random.randrange(co.SPAWN_BORDER_MARGIN_LEFT + co.H_RADIUS, co.WIDTH - co.H_RADIUS)
+        y = random.randrange(co.SPAWN_BORDER_MARGIN_TOP + co.H_RADIUS, co.HEIGHT - co.H_RADIUS)
+        return x, y
 
 class Hydrogen(Atom):
     def __init__(self, x_center, y_center):
@@ -93,8 +98,7 @@ class Hydrogen(Atom):
     @staticmethod
     def generate_random(previous_atoms):
         while True:
-            x = random.randrange(co.SPAWN_BORDER_MARGIN + co.H_RADIUS, co.WIDTH - co.SPAWN_BORDER_MARGIN - co.H_RADIUS)
-            y = random.randrange(co.SPAWN_BORDER_MARGIN + co.H_RADIUS, co.HEIGHT - co.SPAWN_BORDER_MARGIN - co.H_RADIUS)
+            x, y = Atom.generate_random_position(co.H_RADIUS)
             if all(not atom.isColliding(x, y, co.H_RADIUS) for atom in previous_atoms):
                 break
         return Hydrogen(x, y)
@@ -106,8 +110,7 @@ class Oxygen(Atom):
     @staticmethod
     def generate_random(previous_atoms):
         while True:
-            x = random.randrange(co.SPAWN_BORDER_MARGIN + co.O_RADIUS, co.WIDTH - co.SPAWN_BORDER_MARGIN - co.O_RADIUS)
-            y = random.randrange(co.SPAWN_BORDER_MARGIN + co.O_RADIUS, co.HEIGHT - co.SPAWN_BORDER_MARGIN - co.O_RADIUS)
+            x, y = Atom.generate_random_position(co.O_RADIUS)
             if all(not atom.isColliding(x, y, co.O_RADIUS) for atom in previous_atoms):
                 break
         return Oxygen(x, y)
@@ -119,8 +122,7 @@ class Nitrogen(Atom):
     @staticmethod
     def generate_random(previous_atoms):
         while True:
-            x = random.randrange(co.SPAWN_BORDER_MARGIN + co.N_RADIUS, co.WIDTH - co.SPAWN_BORDER_MARGIN - co.N_RADIUS)
-            y = random.randrange(co.SPAWN_BORDER_MARGIN + co.N_RADIUS, co.HEIGHT - co.SPAWN_BORDER_MARGIN - co.N_RADIUS)
+            x, y = Atom.generate_random_position(co.N_RADIUS)
             if all(not atom.isColliding(x, y, co.N_RADIUS) for atom in previous_atoms):
                 break
         return Nitrogen(x, y)
@@ -132,8 +134,7 @@ class Carbon(Atom):
     @staticmethod
     def generate_random(previous_atoms):
         while True:
-            x = random.randrange(co.SPAWN_BORDER_MARGIN + co.C_RADIUS, co.WIDTH - co.SPAWN_BORDER_MARGIN - co.C_RADIUS)
-            y = random.randrange(co.SPAWN_BORDER_MARGIN + co.C_RADIUS, co.HEIGHT - co.SPAWN_BORDER_MARGIN - co.C_RADIUS)
+            x, y = Atom.generate_random_position(co.C_RADIUS)
             if all(not atom.isColliding(x, y, co.C_RADIUS) for atom in previous_atoms):
                 break
         return Carbon(x, y)

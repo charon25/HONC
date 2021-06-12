@@ -27,10 +27,11 @@ class Game:
 
     def start(self, restart=False):
         # Atomes
-        self.atoms: List[Atom] = []
+        self.atoms: List[Atom] = list()
         self.bonding: Bonding = Bonding()
         self.bonds: Dict[int, Dict[int, List[pyg.Surface, List[int]]]] = dict()
-        self.discovered_molecules: List[str] = []
+        self.discovered_molecules: List[str] = list()
+        self.discovered_molecules_bonds_count: Dict[str, int] = dict()
         self.total_atoms_count = 0
 
         # Spawn
@@ -44,6 +45,9 @@ class Game:
         if not restart:
             self.state: co.GameState = co.GameState.MENU
         self.weights = [1.0, 0.0, 0.0, 0.0]
+        self.score = 0
+        self.multiplier = 1.5
+        self.discovered_text = None
 
         self.temp()
 
@@ -100,8 +104,19 @@ class Game:
             self.atoms.remove(atom)
 
     def score_molecule(self, molecule: Molecule):
+        bonds_count = utils.get_bonds_count_from_formula(molecule.formula)
+        self.score += bonds_count * self.multiplier
+        if bonds_count > 1:
+            self.multiplier += co.MULTIPLIER_ADD * bonds_count
+
         if not molecule.formula in self.discovered_molecules:
             self.discovered_molecules.append(molecule.formula)
+            self.discovered_molecules_bonds_count[molecule.formula] = bonds_count
+            self.discovered_molecules.sort(key=lambda formula:utils.get_bonds_count_from_formula(formula), reverse=True)
+            self.score += co.SCORE_NEW_MOLECULE
+            molecule_name = co.MOLECULE_NAMES[molecule.formula] if molecule.formula in co.MOLECULE_NAMES else molecule.formula
+            self.discovered_text = [molecule_name, co.DISCOVER_TEXT_DURATION]
+            
             print("New molecule :", molecule.formula)
             try:
                 print("Name :", co.MOLECULE_NAMES[molecule.formula])
@@ -131,6 +146,14 @@ class Game:
         
         self.bonding.update_texture(*data['pos'])
 
+    def draw_score_text(self):
+        font = utils.get_font(co.SCORE_TEXT_SIZE)
+        score_surface = font.render('Score: {:0.00f}'.format(self.score), False, co.SCORE_TEXT_COLOR)
+        self.screen.blit(score_surface, (co.WIDTH - score_surface.get_width() - co.TEXT_RIGHT_MARGIN, co.SCORE_TEXT_Y))
+
+        multipler_surface = font.render('(x{:.01f})'.format(self.multiplier), False, co.MULTIPLIER_TEXT_COLOR(self.multiplier))
+        self.screen.blit(multipler_surface, (co.WIDTH - multipler_surface.get_width() - co.TEXT_RIGHT_MARGIN, co.MULTIPLIER_TEXT_Y))
+
     def draw_game(self):
         self.screen.blit(co.BG_TEXTURE, (0, 0))
 
@@ -147,15 +170,25 @@ class Game:
         if self.bonding.texture_ready:
             self.screen.blit(self.bonding.texture, self.bonding.position)
         
-        utils.draw_text(self.screen, 'Discovered molecules :', *co.DISCOVERED_TEXT, [False, False, True])
+        self.draw_score_text()
+        utils.draw_text(self.screen, 'Discovered molecules', *co.DISCOVERED_TEXT, [False, False, True])
         for i, formula in enumerate(self.discovered_molecules):
             utils.draw_text(
                 self.screen,
                 formula,
                 co.FORMULA_TEXT_SIZE,
                 co.FORMULA_TEXT_POSITION(i),
-                co.FORMULA_TEXT_COLOR
+                co.FORMULA_TEXT_COLOR(self.discovered_molecules_bonds_count[formula])
             )
+        if self.discovered_text is not None:
+            name = self.discovered_text[0]
+            font = utils.get_font(co.DISCOVER_TEXT_SIZE)
+            discovered_surface = font.render('You discovered: {}!'.format(name), False, co.DISCOVER_TEXT_COLOR)
+            self.screen.blit(discovered_surface, ((co.WIDTH - discovered_surface.get_width()) // 2, co.DISCOVER_TEXT_Y))
+
+
+    def hydrogen_count(self):
+        return sum(type(atom) == Hydrogen for atom in self.atoms)
 
     def spawn_atom(self):
         self.atom_spawn_cooldown -= 1
@@ -166,6 +199,8 @@ class Game:
             spawn_count = 1 + random.randrange(0, co.MAX_SPAWN_AT_ONCE)
             for _ in range(spawn_count):
                 self.atoms.append(Atom.generate_random(self.atoms, self.weights))
+            if self.hydrogen_count() < 3:
+                self.atoms.append(Hydrogen.generate_random(self.atoms))
             self.weights = utils.weights_over_time(self.total_atoms_count)
             self.total_atoms_count += spawn_count
 
@@ -181,17 +216,29 @@ class Game:
                 star_vy = random.randint(co.STAR_SPEED_MIN, co.STAR_SPEED_MAX) * math.sin(angle)
                 star_texture = co.STAR_TEXTURES[random.randrange(0, 9)]
                 self.stars.append(Star(star_x, star_y, star_vx, star_vy, star_texture))
+
+    def manage_stars(self):
+        for star in self.stars:
+            star.move()
+        self.stars = [star for star in self.stars if not star.out]
     
+    def loop_game(self):
+        self.draw_game()
+        self.spawn_atom()
+        self.spawn_star()
+        self.manage_stars()
+        if self.multiplier > co.MULTIPLIER_MIN:
+            self.multiplier *= co.MULTIPLIER_DECREASE
+        if self.discovered_text is not None:
+            self.discovered_text[1] -= 1
+            if self.discovered_text[1] <= 0:
+                self.discovered_text = None
+
     def loop(self):
         self.clock.tick(60)
         self.events.listen()
         if self.state == co.GameState.GAME:
-            self.draw_game()
-            self.spawn_atom()
-            self.spawn_star()
-            for star in self.stars:
-                star.move()
-            self.stars = [star for star in self.stars if not star.out]
+            self.loop_game()
         elif self.state == co.GameState.END:
             pass
         elif self.state == co.GameState.MENU:
