@@ -1,34 +1,42 @@
-CN2O	Nitrosyl cyanide
-CO2	Carbon dioxide
+H2	Hydrogen gas
+H2O	Water
+O2	Dioxygen
+H2O2	Hydrogen peroxide
+H3N	Ammonia
+HNO	Nitroxyl
+N2	Dinitrogen
 NO2	Nitrogen dioxide
 O3	Ozone
-CHN	Hydrogen cyanide
-HNO	Nitroxyl
-CHNO	Isocyanic acid
-HNO2	Nitrous acid
-HNO3	Nitric acid
-H2	Hydrogen gas
-H2N2	Diimide
-CH2N2	Cyanamide
-H2O	Water
 CH2O	Formaldehyde
-H2O2	Hydrogen peroxide
-CH2O2	Formic acid
-H2N2O2	Hyponitrous acid
-H3N	Ammonia
-CH3N	Methanimine
-CH3NO	Formamide
-CH3NO2	Methyl nitrite
 CH4	Methane
-CH4O	Methyl Alcohol
-CH4N2O	Urea
-CH4O2	Methyl peroxide
-CH5N	Methylamine
-O2	Dioxygen
+CHN	Hydrogen cyanide
+CO2	Carbon dioxide
+H2N2	Diimide
 H2O3	Trioxidane
-N2	Dinitrogen
-CH4O4	Orthocarbonic acid
+HNO2	Nitrous acid
+O4	Tetraoxygen
 C2H2	Acetylene
-C2H5NO2	Nitroethane
-H3N	Hydrazoic acid
+CH2O2	Formic acid
+CH3N	Methanimine
+CH4O	Methanol
+CHNO	Isocyanic acid
 H4N2	Hydrazine
+HNO3	Nitric acid
+C2O2	Ethylene dione
+CH2N2	Cyanamide
+CH3NO	Formamide
+CH4O2	Methanediol
+CH5N	Methylamine
+CN2O	Nitrosyl cyanide
+H2N2O2	Hyponitrous acid
+H3N3	Triazene
+C2H6	Ethane
+CH3NO2	Methyl nitrite
+H5N3	Triazane
+C2H6O	Ethanol
+CH4N2O	Urea
+CH4O4	Orthocarbonic acid
+C2H5NO2	Nitroethane
+C3H8	Propane
+C3H8O	Propanol
+C6H6	Benzene

@@ -18,7 +18,7 @@ def weights_over_time(n):
         return [6 / 12, 6 / 12, 0, 0]
     if n < co.ONLY_NITROGEN:
         return [16 / 41, 16 / 41, 9 / 41, 0]
-    return [45 / 123, 36 / 123, 24 / 123, 18 / 123]
+    return [86 / 226, 57 / 226, 37 / 226, 46 / 226]
 
 def get_font(size, bold=False, italic=False, underline=False):
     try:

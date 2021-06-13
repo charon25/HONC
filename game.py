@@ -371,12 +371,11 @@ class Game:
                 self.stars.remove(star)
 
     def show_hint(self):
-        undiscovered_molecules = [formula for formula in co.MOLECULE_NAMES if not formula in self.discovered_molecules]
-        if len(undiscovered_molecules) == 0:
-            return
-
-        self.hint = random.choice(undiscovered_molecules)
-        self.sounds.play_sound(co.SOUND_HINT)
+        for formula in co.MOLECULE_NAMES:
+            if not formula in self.discovered_molecules:
+                self.hint = formula
+                self.sounds.play_sound(co.SOUND_HINT)
+                return
 
 
     def loop_game(self, tuto=False):
