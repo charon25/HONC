@@ -199,7 +199,12 @@ TUTO_FRAME2_ATOMS = [
     (WIDTH - 216, HEIGHT // 2)
 ]
 ## Frame 3
-TUTO_FRAME3_DURATION = int(5 * 60)
+TUTO_FRAME3_DURATION = int(2.5 * 60)
+TUTO_FRAME3_BTN_TEXTURE = pyghelper.Image.create('resources/textures/play_btn.png')
+TUTO_FRAME3_BTN_WIDTH = 300
+TUTO_FRAME3_BTN_HEIGHT = 80
+TUTO_FRAME3_BTN_X = (WIDTH - TUTO_FRAME3_BTN_WIDTH) // 2
+TUTO_FRAME3_BTN_Y = 540
 
 # Effets sonores
 ## Clic

@@ -12,6 +12,7 @@ class Tutorial:
         self.texture = None
         self.atoms: List[Atom] = list()
         self.used = False
+        self.show_go_btn = False
         self.cooldown = 0
         self.set_frame(0)
 
@@ -48,3 +49,8 @@ class Tutorial:
     def age(self):
         if self.cooldown > 0:
             self.cooldown -= 1
+            if self.cooldown <= 0:
+                self.show_go_btn = True
+
+    def end(self):
+        self.show_go_btn = False

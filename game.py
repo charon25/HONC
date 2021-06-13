@@ -76,6 +76,7 @@ class Game:
                 self.tutorial: Tutorial = Tutorial()
             else:
                 self.state: co.GameState = co.GameState.GAME
+                self.tutorial.end()
         self.set_callbacks()
         self.weights = [1.0, 0.0, 0.0, 0.0]
         self.score = 0
@@ -198,6 +199,11 @@ class Game:
         if co.RESTART_BTN_POS_X <= mouse_x <= co.RESTART_BTN_POS_Y + co.RESTART_BTN_SIZE and co.RESTART_BTN_POS_Y <= mouse_y <= co.RESTART_BTN_POS_X + co.RESTART_BTN_SIZE:
             self.sounds.play_sound(co.SOUND_CLICK)
             self.start(restart=True, tuto=(self.state == co.GameState.TUTO))
+        
+        if self.tutorial.show_go_btn:
+            if co.TUTO_FRAME3_BTN_X <= mouse_x <= co.TUTO_FRAME3_BTN_X + co.TUTO_FRAME3_BTN_WIDTH and co.TUTO_FRAME3_BTN_Y <= mouse_y <= co.TUTO_FRAME3_BTN_Y + co.TUTO_FRAME3_BTN_HEIGHT:
+                self.sounds.play_sound(co.SOUND_CLICK)
+                self.start(restart=True, tuto=False)
 
         for atom in self.atoms:
             if atom.isAppearing():
@@ -258,6 +264,9 @@ class Game:
         game_surface.blit(co.BG_TEXTURE if not tuto else self.tutorial.texture, (0, 0))
 
         game_surface.blits([(star.texture, (star.x, star.y)) for star in self.stars])
+
+        if tuto and self.tutorial.show_go_btn:
+            game_surface.blit(co.TUTO_FRAME3_BTN_TEXTURE, (co.TUTO_FRAME3_BTN_X, co.TUTO_FRAME3_BTN_Y))
         
         if not tuto:
             utils.draw_text(game_surface, 'Discovered molecules ({}/{})'.format(self.get_named_molecules_count(), len(co.MOLECULE_NAMES)), *co.DISCOVERED_TEXT, [False, False, True])
@@ -404,9 +413,6 @@ class Game:
             if self.tutorial.frame <= co.TUTO_LAST_ATOM_FRAME:
                 if len(self.atoms) == 0:
                     self.tutorial.set_frame(self.tutorial.frame + 1)
-            else:
-                if self.tutorial.cooldown <= 0:
-                    self.start(restart=True, tuto=False)
 
         self.draw_game(tuto)
 

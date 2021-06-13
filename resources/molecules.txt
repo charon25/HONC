@@ -31,3 +31,4 @@ CH4O4	Orthocarbonic acid
 C2H2	Acetylene
 C2H5NO2	Nitroethane
 H3N	Hydrazoic acid
+H4N2	Hydrazine
