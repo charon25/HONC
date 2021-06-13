@@ -4,6 +4,6 @@ This game was made by me alone (except for the music, made by Bycob) between the
 It is my second game made in Python (with Pygame only, and using [my wrapper](https://github.com/charon25/PythonGameHelper)) !
 
 ## Link
-You can find more about the game and play it here : [itch.io/spalt](https://charon25.itch.io/spalt).
+You can find more about the game and play it here : [itch.io/honc](https://charon25.itch.io/HONC).
 
 # Known bugs
