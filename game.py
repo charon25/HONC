@@ -123,7 +123,7 @@ class Game:
         self.bonding.atom.bind(atom)
         multiplicity += 1
 
-        self.bonding.update_texture(atom.x, atom.y, multiplicity)
+        self.bonding.update_texture(atom.x, atom.y, atom, multiplicity)
         self.add_bond(atom, self.bonding.atom)
         self.bonding.disable()
         

@@ -22,7 +22,7 @@ class Bonding:
         self.is_none = True
         self.texture_ready = False
 
-    def update_texture(self, mouse_x, mouse_y, multiplicity=1):
+    def update_texture(self, mouse_x, mouse_y, binding_atom: Atom = None, multiplicity=1):
         if self.is_none:
             return
         
@@ -32,7 +32,13 @@ class Bonding:
         angle = -math.atan2(mouse_y - atom_y, mouse_x - atom_x) # radians
 
         self.texture = pyg.Surface((distance, height), flags=pyg.SRCALPHA)
-        self.texture.blit(self.atom.get_bond_texture(multiplicity), pyg.Rect(0, 0, distance, height))
+        if binding_atom is None or self.atom.type == binding_atom.type:
+            self.texture.blit(self.atom.get_bond_texture(multiplicity), pyg.Rect(0, 0, distance, height))
+        else:
+            dist_1, dist_2 = [distance // 2] * 2 if distance % 2 == 0 else ((distance + 1) // 2, distance // 2)
+            self.texture.blit(self.atom.get_bond_texture(multiplicity), pyg.Rect(0, 0, dist_1, height))
+            self.texture.blit(binding_atom.get_bond_texture(multiplicity), pyg.Rect(dist_1, 0, dist_2, height))
+            pass
         self.texture = pyg.transform.rotate(self.texture, angle * 180 / math.pi) # angle in degrees
 
         width, height = self.texture.get_width(), self.texture.get_height()

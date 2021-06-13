@@ -119,7 +119,8 @@ try:
     with open('resources/molecules.txt', 'r') as fi:
         for line in fi.readlines():
             formula, name = line.strip().split('\t')
-            MOLECULE_NAMES[formula] = name
+            if not formula in MOLECULE_NAMES:
+                MOLECULE_NAMES[formula] = name
 except:pass
 
 # Etoile
@@ -246,7 +247,7 @@ ELECTRON_MULTIPLIER = 0.2
 ELECTRON_DURATION = 2 * 60
 
 # Indice
-HINT_DURATION = 15
+HINT_DURATION = 20
 HINT_TEXT_SIZE = 35
 HINT_TEXT_Y = 665
-HINT_TEXT_COLOR = (60, 60, 200)
+HINT_TEXT_COLOR = (230, 230, 230)
