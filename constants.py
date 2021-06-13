@@ -229,9 +229,19 @@ SOUND_MOLECULE_NEW_PATHS = [
 SOUND_ELECTRON = 'electron'
 SOUND_ELECTRON_PATH = 'resources/audio/sounds/electron.wav'
 
+## Hint
+SOUND_HINT = 'hint'
+SOUND_HINT_PATH = 'resources/audio/sounds/hint.wav'
+
 # Electron
 ELECTRON_RADIUS = 16
 ELECTRON_TEXTURE = pyghelper.Image.create('resources/textures/electron.png')
 ELECTRON_PROBABILITY = 1 / (60 * 10)
 ELECTRON_MULTIPLIER = 0.2
 ELECTRON_DURATION = 2 * 60
+
+# Indice
+HINT_DURATION = 15
+HINT_TEXT_SIZE = 35
+HINT_TEXT_Y = 665
+HINT_TEXT_COLOR = (60, 60, 200)

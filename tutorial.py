@@ -17,7 +17,6 @@ class Tutorial:
 
     def set_frame(self, frame):
         self.frame = frame
-        print(frame)
         self.texture = co.BG_TEXTURE.copy()
         font = utils.get_font(co.TUTO_TEXT_SIZE)
 

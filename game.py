@@ -1,5 +1,6 @@
 import math
 import random
+import time
 from typing import List, Dict
 
 import pygame as pyg
@@ -37,6 +38,7 @@ class Game:
         utils.add_multiple_sounds(self.sounds, co.SOUND_MOLECULE_PATHS, co.SOUND_MOLECULE, 0.35)
         utils.add_multiple_sounds(self.sounds, co.SOUND_MOLECULE_NEW_PATHS, co.SOUND_MOLECULE_NEW, 0.55)
         self.sounds.add_sound(co.SOUND_ELECTRON_PATH, co.SOUND_ELECTRON, 0.4)
+        self.sounds.add_sound(co.SOUND_HINT_PATH, co.SOUND_HINT, 0.4)
 
     def start(self, restart=False, tuto=False):
         # Atomes
@@ -79,6 +81,8 @@ class Game:
         self.score = 0
         self.multiplier = 1.5
         self.discovered_text = None
+        self.last_discovered_time = time.time()
+        self.hint = ''
 
     def set_callbacks(self):
         if self.state == co.GameState.MENU:
@@ -138,7 +142,7 @@ class Game:
             self.atoms.remove(atom)
 
     def score_molecule(self, molecule: Molecule):
-        bonds_count = utils.get_bonds_count_from_formula(molecule.formula)
+        bonds_count = molecule.bonds_count
         if self.electron_cooldown <= 0:
             self.offset = self.screen_shake(2 * bonds_count)
         if self.state == co.GameState.TUTO:
@@ -152,17 +156,27 @@ class Game:
         self.particles.extend(molecule.particles)
 
         if not molecule.formula in self.discovered_molecules:
-            self.discovered_molecules.append(molecule.formula)
-            self.discovered_molecules.sort(key=lambda formula:utils.get_bonds_count_from_formula(formula), reverse=True)
-            self.discovered_molecules_bonds_count[molecule.formula] = bonds_count
-            
-            molecule_name = co.MOLECULE_NAMES[molecule.formula] if molecule.formula in co.MOLECULE_NAMES else molecule.formula
-            self.discovered_text = [molecule_name, co.DISCOVER_TEXT_DURATION]
-            
-            self.score += co.SCORE_NEW_MOLECULE
+            self.discover_molecule(molecule)
             self.sounds.play_sound(co.SOUND_MOLECULE_NEW)
         else:
             self.sounds.play_sound(co.SOUND_MOLECULE)            
+
+    def discover_molecule(self, molecule: Molecule):
+        self.discovered_molecules.append(molecule.formula)
+        self.discovered_molecules_bonds_count[molecule.formula] = molecule.bonds_count
+        self.discovered_molecules.sort(
+            key=lambda formula:self.discovered_molecules_bonds_count[formula] if formula in self.discovered_molecules_bonds_count else 0,
+            reverse=True
+        )
+        
+        molecule_name = co.MOLECULE_NAMES[molecule.formula] if molecule.formula in co.MOLECULE_NAMES else molecule.formula
+        self.discovered_text = [molecule_name, co.DISCOVER_TEXT_DURATION]
+        
+        self.score += co.SCORE_NEW_MOLECULE
+
+        self.last_discovered_time = time.time()
+        if self.hint == molecule.formula:
+            self.hint = ''
 
     def click_menu(self, data):
         if data['button'] != 1:
@@ -246,7 +260,6 @@ class Game:
         game_surface.blits([(star.texture, (star.x, star.y)) for star in self.stars])
         
         if not tuto:
-            self.draw_score_text(game_surface)
             utils.draw_text(game_surface, 'Discovered molecules ({}/{})'.format(self.get_named_molecules_count(), len(co.MOLECULE_NAMES)), *co.DISCOVERED_TEXT, [False, False, True])
             for i, formula in enumerate(self.discovered_molecules):
                 utils.draw_text(
@@ -266,11 +279,19 @@ class Game:
 
         game_surface.blits([(atom.get_texture(), atom.getTopLeftCorner()) for atom in self.atoms])
         
+        if not tuto:
+            self.draw_score_text(game_surface)
+
         if self.discovered_text is not None:
                 name = self.discovered_text[0]
                 font = utils.get_font(co.DISCOVER_TEXT_SIZE)
                 discovered_surface = font.render('You discovered: {}!'.format(name), False, co.DISCOVER_TEXT_COLOR)
                 game_surface.blit(discovered_surface, ((co.WIDTH - discovered_surface.get_width()) // 2, co.DISCOVER_TEXT_Y))
+
+        if self.hint != '':
+            font = utils.get_font(co.HINT_TEXT_SIZE)
+            hint_surface = font.render('Hint: try to create {}'.format(self.hint), False, co.HINT_TEXT_COLOR)
+            game_surface.blit(hint_surface, ((co.WIDTH - hint_surface.get_width()) // 2, co.HINT_TEXT_Y))
 
         if self.bonding.texture_ready:
             game_surface.blit(self.bonding.texture, self.bonding.position)
@@ -339,7 +360,16 @@ class Game:
             star.move()
             if star.out:
                 self.stars.remove(star)
-    
+
+    def show_hint(self):
+        undiscovered_molecules = [formula for formula in co.MOLECULE_NAMES if not formula in self.discovered_molecules]
+        if len(undiscovered_molecules) == 0:
+            return
+
+        self.hint = random.choice(undiscovered_molecules)
+        self.sounds.play_sound(co.SOUND_HINT)
+
+
     def loop_game(self, tuto=False):
         for atom in self.atoms:
             if not atom.isAppearing():
@@ -361,6 +391,11 @@ class Game:
                 self.discovered_text[1] -= 1
                 if self.discovered_text[1] <= 0:
                     self.discovered_text = None
+            
+            if time.time() - self.last_discovered_time >= co.HINT_DURATION:
+                self.last_discovered_time = time.time()
+                if self.hint == '':
+                    self.show_hint()
 
         if tuto:
             self.tutorial.age()
