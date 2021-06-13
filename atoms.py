@@ -131,7 +131,8 @@ class Hydrogen(Atom):
         while True:
             x, y = Atom.generate_random_position(co.H_RADIUS)
             if all(not atom.isColliding(x, y, co.H_RADIUS) for atom in previous_atoms):
-                break
+                if math.dist((x, y), (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_X)) > co.H_RADIUS + 20:
+                    break
         return Hydrogen(x, y)
 
 
@@ -144,7 +145,8 @@ class Oxygen(Atom):
         while True:
             x, y = Atom.generate_random_position(co.O_RADIUS)
             if all(not atom.isColliding(x, y, co.O_RADIUS) for atom in previous_atoms):
-                break
+                if math.dist((x, y), (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_X)) > co.O_RADIUS + 20:
+                    break
         return Oxygen(x, y)
 
 
@@ -157,7 +159,8 @@ class Nitrogen(Atom):
         while True:
             x, y = Atom.generate_random_position(co.N_RADIUS)
             if all(not atom.isColliding(x, y, co.N_RADIUS) for atom in previous_atoms):
-                break
+                if math.dist((x, y), (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_X)) > co.N_RADIUS + 20:
+                    break
         return Nitrogen(x, y)
 
 
@@ -170,7 +173,8 @@ class Carbon(Atom):
         while True:
             x, y = Atom.generate_random_position(co.C_RADIUS)
             if all(not atom.isColliding(x, y, co.C_RADIUS) for atom in previous_atoms):
-                break
+                if math.dist((x, y), (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_X)) > co.C_RADIUS + 20:
+                    break
         return Carbon(x, y)
 
 
@@ -183,5 +187,6 @@ class Electron(Atom):
         while True:
             x, y = Atom.generate_random_position(co.ELECTRON_RADIUS)
             if all(not atom.isColliding(x, y, co.ELECTRON_RADIUS) for atom in previous_atoms):
-                break
+                if math.dist((x, y), (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_X)) > co.ELECTRON_RADIUS + 20:
+                    break
         return Electron(x, y)

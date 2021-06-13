@@ -5,7 +5,6 @@ H2O2	Hydrogen peroxide
 H3N	Ammonia
 HNO	Nitroxyl
 N2	Dinitrogen
-NO2	Nitrogen dioxide
 O3	Ozone
 CH2O	Formaldehyde
 CH4	Methane
@@ -20,6 +19,7 @@ CH2O2	Formic acid
 CH3N	Methanimine
 CH4O	Methanol
 CHNO	Isocyanic acid
+H2O4	Tetraoxidane
 H4N2	Hydrazine
 HNO3	Nitric acid
 C2O2	Ethylene dione

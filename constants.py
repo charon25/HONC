@@ -25,7 +25,7 @@ SPAWN_BORDER_MARGIN_TOP = 50
 SPAWN_BORDER_MARGIN_LEFT = 100
 SPAWN_COLLIDES_MARGIN = 8
 T0_SPAWN = 1.5 * 60
-TINF_SPAWN = 3.5 * 60
+TINF_SPAWN = 4 * 60
 MAX_SPAWN_AT_ONCE = 3
 ONLY_HYDROGEN = 0
 ONLY_OXYGEN = ONLY_HYDROGEN + 2
@@ -180,7 +180,7 @@ TUTO_FRAMES_TEXTS = [
         'You can get bonus points',
         'by discovering new molecules',
         '',
-        'Pick up electrons to enter a spawning frenzy!']
+        'Pick up electrons to make more atoms appear!']
 ]
 TUTO_LAST_ATOM_FRAME = 2
 ## Frame 0
@@ -244,7 +244,7 @@ ELECTRON_RADIUS = 16
 ELECTRON_TEXTURE = pyghelper.Image.create('resources/textures/electron.png')
 ELECTRON_PROBABILITY = 1 / (60 * 10)
 ELECTRON_MULTIPLIER = 0.2
-ELECTRON_DURATION = 2 * 60
+ELECTRON_DURATION = int(2.5 * 60)
 
 # Indice
 HINT_DURATION = 20
