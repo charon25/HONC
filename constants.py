@@ -239,6 +239,10 @@ SOUND_ELECTRON_PATH = 'resources/audio/sounds/electron.wav'
 SOUND_HINT = 'hint'
 SOUND_HINT_PATH = 'resources/audio/sounds/hint.wav'
 
+# Musique
+MUSIC = 'music'
+MUSIC_PATH = "resources/audio/music.mp3"
+
 # Electron
 ELECTRON_RADIUS = 16
 ELECTRON_TEXTURE = pyghelper.Image.create('resources/textures/electron.png')

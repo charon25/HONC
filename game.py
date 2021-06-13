@@ -40,6 +40,9 @@ class Game:
         self.sounds.add_sound(co.SOUND_ELECTRON_PATH, co.SOUND_ELECTRON, 0.4)
         self.sounds.add_sound(co.SOUND_HINT_PATH, co.SOUND_HINT, 0.4)
 
+        self.sounds.add_music(co.MUSIC_PATH, co.MUSIC)
+        self.sounds.play_music(co.MUSIC, loop=True, volume=0.2)
+
     def start(self, restart=False, tuto=False):
         # Atomes
         self.atoms: List[Atom] = list()
