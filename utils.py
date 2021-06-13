@@ -2,6 +2,7 @@ import math
 import random
 
 import pygame as pyg
+import pyghelper
 import re
 
 import constants as co
@@ -37,7 +38,7 @@ def draw_text(screen, text, size, pos, color, flags=[]):
     screen.blit(img, pos)
 
 def get_bonds_count_from_formula(formula):
-    return sum(co.ATOM_BONDS_COUNT[atom] * (int(count) if count != '' else 1) for atom, count in re.findall(r'(\w)(\d?)', formula)) // 2
+    return sum(co.ATOM_BONDS_COUNT[atom] * (int(count) if count != '' else 1) for atom, count in re.findall(r'(\w)(\d*)', formula)) // 2
 
 def generate_pos_velocity_in_disk(disk_radius, x_center, y_center, vx, vy):
     radius = disk_radius * random.random()
@@ -49,6 +50,10 @@ def generate_pos_velocity_in_disk(disk_radius, x_center, y_center, vx, vy):
         vx * math.cos(angle),
         vy * math.sin(angle)
     )
+
+def add_multiple_sounds(sound_manager: pyghelper.SoundManager, sounds, sound_name, volume=1.0):
+    for path in sounds:
+        sound_manager.add_sound(path, sound_name, volume=volume)
 
 def void(args):
     pass

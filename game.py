@@ -23,7 +23,19 @@ class Game:
         self.events = pyghelper.EventManager()
         self.events.set_quit_callback(self.stop)
 
+        # Sons
+        self.setup_sounds()
+
         self.is_ended = False
+
+    def setup_sounds(self):
+        self.sounds: pyghelper.SoundManager = pyghelper.SoundManager()
+        self.sounds.add_sound(co.SOUND_CLICK_PATH, co.SOUND_CLICK, volume=0.5)
+        utils.add_multiple_sounds(self.sounds, co.SOUND_BOND_PATHS, co.SOUND_BOND, 0.4)
+        utils.add_multiple_sounds(self.sounds, co.SOUND_BOND_PATHS, co.SOUND_BOND, 0.5)
+        utils.add_multiple_sounds(self.sounds, co.SOUND_BOND_PATHS, co.SOUND_BOND, 0.3)
+        utils.add_multiple_sounds(self.sounds, co.SOUND_MOLECULE_PATHS, co.SOUND_MOLECULE, 0.35)
+        utils.add_multiple_sounds(self.sounds, co.SOUND_MOLECULE_NEW_PATHS, co.SOUND_MOLECULE_NEW, 0.55)
 
     def start(self, restart=False, tuto=False):
         # Atomes
@@ -107,6 +119,8 @@ class Game:
         self.bonding.update_texture(atom.x, atom.y, multiplicity)
         self.add_bond(atom, self.bonding.atom)
         self.bonding.disable()
+        
+        self.sounds.play_sound(co.SOUND_BOND)
 
         if not atom.hasAvailableBonds() and not self.bonding.atom.hasAvailableBonds():
             molecule = Molecule.create_molecule(atom)
@@ -131,6 +145,8 @@ class Game:
         if bonds_count > 1:
             self.multiplier += co.MULTIPLIER_ADD * bonds_count
 
+        self.particles.extend(molecule.particles)
+
         if not molecule.formula in self.discovered_molecules:
             self.discovered_molecules.append(molecule.formula)
             self.discovered_molecules.sort(key=lambda formula:utils.get_bonds_count_from_formula(formula), reverse=True)
@@ -140,8 +156,9 @@ class Game:
             self.discovered_text = [molecule_name, co.DISCOVER_TEXT_DURATION]
             
             self.score += co.SCORE_NEW_MOLECULE
-            
-        self.particles.extend(molecule.particles)
+            self.sounds.play_sound(co.SOUND_MOLECULE_NEW)
+        else:
+            self.sounds.play_sound(co.SOUND_MOLECULE)            
 
     def click_menu(self, data):
         if data['button'] != 1:
@@ -149,6 +166,7 @@ class Game:
         
         mouse_x, mouse_y = data['pos']
         if co.MENU_BTN_X <= mouse_x <= co.MENU_BTN_X + co.MENU_BTN_SIZE and co.MENU_BTN_Y <= mouse_y <= co.MENU_BTN_Y + co.MENU_BTN_SIZE:
+            self.sounds.play_sound(co.SOUND_CLICK)
             self.start(restart=True, tuto=False)
 
     def click_game(self, data):
@@ -160,6 +178,7 @@ class Game:
         mouse_x, mouse_y = data['pos']
 
         if co.RESTART_BTN_POS_X <= mouse_x <= co.RESTART_BTN_POS_Y + co.RESTART_BTN_SIZE and co.RESTART_BTN_POS_Y <= mouse_y <= co.RESTART_BTN_POS_X + co.RESTART_BTN_SIZE:
+            self.sounds.play_sound(co.SOUND_CLICK)
             self.start(restart=True, tuto=(self.state == co.GameState.TUTO))
 
         for atom in self.atoms:
@@ -217,11 +236,6 @@ class Game:
                     co.FORMULA_TEXT_POSITION(i),
                     co.FORMULA_TEXT_COLOR(self.discovered_molecules_bonds_count[formula])
                 )
-            if self.discovered_text is not None:
-                name = self.discovered_text[0]
-                font = utils.get_font(co.DISCOVER_TEXT_SIZE)
-                discovered_surface = font.render('You discovered: {}!'.format(name), False, co.DISCOVER_TEXT_COLOR)
-                game_surface.blit(discovered_surface, ((co.WIDTH - discovered_surface.get_width()) // 2, co.DISCOVER_TEXT_Y))
 
 
         game_surface.blits([(particle.texture, (particle.x, particle.y)) for particle in self.particles])
@@ -231,6 +245,12 @@ class Game:
                 game_surface.blit(bond_texture, bond_position)
 
         game_surface.blits([(atom.get_texture(), atom.getTopLeftCorner()) for atom in self.atoms])
+        
+        if self.discovered_text is not None:
+                name = self.discovered_text[0]
+                font = utils.get_font(co.DISCOVER_TEXT_SIZE)
+                discovered_surface = font.render('You discovered: {}!'.format(name), False, co.DISCOVER_TEXT_COLOR)
+                game_surface.blit(discovered_surface, ((co.WIDTH - discovered_surface.get_width()) // 2, co.DISCOVER_TEXT_Y))
 
         if self.bonding.texture_ready:
             game_surface.blit(self.bonding.texture, self.bonding.position)
@@ -251,6 +271,8 @@ class Game:
 
     def spawn_atom(self):
         self.atom_spawn_cooldown -= 1
+        if len(self.atoms) < 3:
+            self.atom_spawn_cooldown -= 1
         if self.atom_spawn_cooldown <= 0:
             self.atom_spawn_cooldown = random.gauss(utils.atom_mean_over_time(self.total_atoms_count), 1.0)
             if len(self.atoms) >= co.ATOMS_COUNT_LIMIT:

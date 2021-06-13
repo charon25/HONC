@@ -138,9 +138,9 @@ MULTIPLIER_DECREASE = 1 - 0.00068
 MULTIPLIER_MIN = 0.2
 
 # Texte découverte
-DISCOVER_TEXT_DURATION = 60 * 3
-DISCOVER_TEXT_SIZE = 35
-DISCOVER_TEXT_Y = 665
+DISCOVER_TEXT_DURATION = 60 * 3.5
+DISCOVER_TEXT_SIZE = 45
+DISCOVER_TEXT_Y = 620
 DISCOVER_TEXT_COLOR = (120, 120, 200)
 
 # Particules
@@ -198,3 +198,27 @@ TUTO_FRAME2_ATOMS = [
 ]
 ## Frame 3
 TUTO_FRAME3_DURATION = int(3.5 * 60)
+
+# Effets sonores
+## Clic
+SOUND_CLICK = 'click'
+SOUND_CLICK_PATH = 'resources/audio/sounds/simple_click.wav'
+
+## Liaison
+SOUND_BOND = 'bond'
+SOUND_BOND_PATHS = [
+    'resources/audio/sounds/bond/{}.wav'.format(index)
+    for index in range(1, 5)
+]
+
+## Molécule
+SOUND_MOLECULE = 'molecule'
+SOUND_MOLECULE_PATHS = [
+    'resources/audio/sounds/molecule/{}.wav'.format(index)
+    for index in range(1, 4)
+]
+SOUND_MOLECULE_NEW = 'molecule_new'
+SOUND_MOLECULE_NEW_PATHS = [
+    'resources/audio/sounds/molecule/new/{}.wav'.format(index)
+    for index in range(1, 4)
+]
