@@ -177,7 +177,9 @@ TUTO_FRAMES_TEXTS = [
         'or your multiplier will go down!',
         '',
         'You can get bonus points',
-        'by discovering new molecules']
+        'by discovering new molecules',
+        '',
+        'Pick up electrons to enter a spawning frenzy!']
 ]
 TUTO_LAST_ATOM_FRAME = 2
 ## Frame 0
@@ -197,7 +199,7 @@ TUTO_FRAME2_ATOMS = [
     (WIDTH - 216, HEIGHT // 2)
 ]
 ## Frame 3
-TUTO_FRAME3_DURATION = int(3.5 * 60)
+TUTO_FRAME3_DURATION = int(5 * 60)
 
 # Effets sonores
 ## Clic
@@ -222,3 +224,14 @@ SOUND_MOLECULE_NEW_PATHS = [
     'resources/audio/sounds/molecule/new/{}.wav'.format(index)
     for index in range(1, 4)
 ]
+
+## Electron
+SOUND_ELECTRON = 'electron'
+SOUND_ELECTRON_PATH = 'resources/audio/sounds/electron.wav'
+
+# Electron
+ELECTRON_RADIUS = 16
+ELECTRON_TEXTURE = pyghelper.Image.create('resources/textures/electron.png')
+ELECTRON_PROBABILITY = 1 / (60 * 10)
+ELECTRON_MULTIPLIER = 0.2
+ELECTRON_DURATION = 2 * 60

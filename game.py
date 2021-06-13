@@ -5,7 +5,7 @@ from typing import List, Dict
 import pygame as pyg
 import pyghelper
 
-from atoms import Atom, Carbon, Hydrogen, Nitrogen, Oxygen
+from atoms import Atom, AtomType, Electron, Hydrogen
 from bonding import Bonding
 import constants as co
 from molecule import Molecule
@@ -36,6 +36,7 @@ class Game:
         utils.add_multiple_sounds(self.sounds, co.SOUND_BOND_PATHS, co.SOUND_BOND, 0.3)
         utils.add_multiple_sounds(self.sounds, co.SOUND_MOLECULE_PATHS, co.SOUND_MOLECULE, 0.35)
         utils.add_multiple_sounds(self.sounds, co.SOUND_MOLECULE_NEW_PATHS, co.SOUND_MOLECULE_NEW, 0.55)
+        self.sounds.add_sound(co.SOUND_ELECTRON_PATH, co.SOUND_ELECTRON, 0.4)
 
     def start(self, restart=False, tuto=False):
         # Atomes
@@ -45,6 +46,8 @@ class Game:
         self.discovered_molecules: List[str] = list()
         self.discovered_molecules_bonds_count: Dict[str, int] = dict()
         self.total_atoms_count = 0
+        self.atom_spawn_multiplier = 1.0
+        self.electron_cooldown = 0
 
         # Spawn
         self.atom_spawn_cooldown = utils.atom_mean_over_time(0)
@@ -87,7 +90,6 @@ class Game:
         elif self.state == co.GameState.GAME:
             self.events.set_mousebuttondown_callback(self.click_game)
             self.events.set_mousemotion_callback(self.mousemove_game)
-
 
     def stop(self):
         self.is_ended = True
@@ -137,8 +139,10 @@ class Game:
 
     def score_molecule(self, molecule: Molecule):
         bonds_count = utils.get_bonds_count_from_formula(molecule.formula)
-        self.offset = self.screen_shake(2 * bonds_count)
+        if self.electron_cooldown <= 0:
+            self.offset = self.screen_shake(2 * bonds_count)
         if self.state == co.GameState.TUTO:
+            self.sounds.play_sound(co.SOUND_MOLECULE)  
             return
 
         self.score += bonds_count * self.multiplier
@@ -167,7 +171,7 @@ class Game:
         mouse_x, mouse_y = data['pos']
         if co.MENU_BTN_X <= mouse_x <= co.MENU_BTN_X + co.MENU_BTN_SIZE and co.MENU_BTN_Y <= mouse_y <= co.MENU_BTN_Y + co.MENU_BTN_SIZE:
             self.sounds.play_sound(co.SOUND_CLICK)
-            self.start(restart=True, tuto=False)
+            self.start(restart=True, tuto=True)
 
     def click_game(self, data):
         if data['button'] == 3:
@@ -187,12 +191,22 @@ class Game:
             if not atom.hasAvailableBonds():
                 continue
             if atom.isTouching(mouse_x, mouse_y):
+                if atom.type == AtomType.ELECTRON:
+                    self.click_electron(electron=atom)
+                    break
                 if self.bonding.is_none:
                     self.bonding.enable(atom)
                 else:
                     if atom != self.bonding.atom:
                         self.create_bond(atom)
                 break
+
+    def click_electron(self, electron: Electron):
+        self.electron_cooldown = co.ELECTRON_DURATION
+        self.atom_spawn_multiplier = co.ELECTRON_MULTIPLIER
+        self.offset = self.screen_shake_electron()
+        self.sounds.play_sound(co.SOUND_ELECTRON)
+        self.atoms.remove(electron)
 
     def mousemove_game(self, data):
         if self.bonding.is_none:
@@ -205,6 +219,12 @@ class Game:
             bonds_count = co.MAX_SCREENSHAKE
         for _ in range(co.SCREENSHAKE_COUNT):
             yield (random.randint(-bonds_count, bonds_count), random.randint(-bonds_count, bonds_count))
+        while True:
+            yield (0, 0)
+
+    def screen_shake_electron(self):
+        for _ in range(co.ELECTRON_DURATION):
+            yield (random.randint(-1, 1), random.randint(-1, 1))
         while True:
             yield (0, 0)
 
@@ -267,14 +287,17 @@ class Game:
         self.screen.blit(co.MENU_TEXTURE, (0, 0))
 
     def hydrogen_count(self):
-        return sum(type(atom) == Hydrogen for atom in self.atoms)
+        return sum(atom.type == AtomType.HYDROGEN for atom in self.atoms)
+    
+    def electron_count(self):
+        return sum(atom.type == AtomType.ELECTRON for atom in self.atoms)
 
-    def spawn_atom(self):
+    def spawn_atoms(self):
         self.atom_spawn_cooldown -= 1
         if len(self.atoms) < 3:
             self.atom_spawn_cooldown -= 1
         if self.atom_spawn_cooldown <= 0:
-            self.atom_spawn_cooldown = random.gauss(utils.atom_mean_over_time(self.total_atoms_count), 1.0)
+            self.atom_spawn_cooldown = random.gauss(utils.atom_mean_over_time(self.total_atoms_count), 1.0) * self.atom_spawn_multiplier
             if len(self.atoms) >= co.ATOMS_COUNT_LIMIT:
                 return
             spawn_count = 1 + random.randrange(0, co.MAX_SPAWN_AT_ONCE)
@@ -284,6 +307,15 @@ class Game:
                 self.atoms.append(Hydrogen.generate_random(self.atoms))
             self.weights = utils.weights_over_time(self.total_atoms_count)
             self.total_atoms_count += spawn_count
+
+    def manage_electrons(self):
+        if self.electron_cooldown > 0:
+            self.electron_cooldown -= 1
+            if self.electron_cooldown <= 0:
+                self.atom_spawn_multiplier = 1.0
+
+        if self.electron_count() == 0 and random.random() < co.ELECTRON_PROBABILITY:
+            self.atoms.append(Electron.generate_random(self.atoms))
 
     def spawn_star(self):
         self.star_cooldown -= 1
@@ -320,7 +352,8 @@ class Game:
                 self.particles.remove(particle)
 
         if not tuto:
-            self.spawn_atom()
+            self.spawn_atoms()
+            self.manage_electrons()
 
             if self.multiplier > co.MULTIPLIER_MIN:
                 self.multiplier *= co.MULTIPLIER_DECREASE

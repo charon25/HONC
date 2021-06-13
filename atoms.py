@@ -9,6 +9,7 @@ import pyghelper
 import constants as co
 
 class AtomType(IntEnum):
+    ELECTRON = 0
     HYDROGEN = co.H_BONDS
     OXYGEN = co.O_BONDS
     NITROGEN = co.N_BONDS
@@ -17,9 +18,7 @@ class AtomType(IntEnum):
 
 class Atom:
     def __init__(self, x_center, y_center, radius, max_bonds):
-        self.x0 = x_center
         self.x = x_center
-        self.y0 = y_center
         self.y = y_center
         self.radius = radius
         self.max_bonds = max_bonds
@@ -38,7 +37,7 @@ class Atom:
         return (self.x - x) ** 2 + (self.y - y) ** 2 <= (self.radius + radius + co.SPAWN_COLLIDES_MARGIN) ** 2
         
     def hasAvailableBonds(self):
-        return len(self.bonds) < self.max_bonds
+        return len(self.bonds) < self.max_bonds or self.type == AtomType.ELECTRON
 
     def getTopLeftCorner(self):
         if self.appearing is None:
@@ -56,6 +55,8 @@ class Atom:
                 return co.N_TEXTURES[len(self.bonds)]
             elif self.type == AtomType.CARBON:
                 return co.C_TEXTURES[len(self.bonds)]
+            elif self.type == AtomType.ELECTRON:
+                return co.ELECTRON_TEXTURE
         else:
             size = int(2 * self.radius * self.scale_factor)
             if self.type == AtomType.HYDROGEN:
@@ -66,6 +67,8 @@ class Atom:
                 return pyg.transform.scale(co.N_TEXTURES[len(self.bonds)], (size, size))
             elif self.type == AtomType.CARBON:
                 return pyg.transform.scale(co.C_TEXTURES[len(self.bonds)], (size, size))
+            elif self.type == AtomType.ELECTRON:
+                return pyg.transform.scale(co.ELECTRON_TEXTURE, (size, size))
 
     def get_bond_texture(self, multiplicity):
         if self.type == AtomType.HYDROGEN:
@@ -118,6 +121,7 @@ class Atom:
         y = random.randrange(co.SPAWN_BORDER_MARGIN_TOP + co.H_RADIUS, co.HEIGHT - co.H_RADIUS)
         return x, y
 
+
 class Hydrogen(Atom):
     def __init__(self, x_center, y_center):
         super().__init__(x_center, y_center, co.H_RADIUS, co.H_BONDS)
@@ -129,6 +133,7 @@ class Hydrogen(Atom):
             if all(not atom.isColliding(x, y, co.H_RADIUS) for atom in previous_atoms):
                 break
         return Hydrogen(x, y)
+
 
 class Oxygen(Atom):
     def __init__(self, x_center, y_center):
@@ -142,6 +147,7 @@ class Oxygen(Atom):
                 break
         return Oxygen(x, y)
 
+
 class Nitrogen(Atom):
     def __init__(self, x_center, y_center):
         super().__init__(x_center, y_center, co.N_RADIUS, co.N_BONDS)
@@ -153,6 +159,7 @@ class Nitrogen(Atom):
             if all(not atom.isColliding(x, y, co.N_RADIUS) for atom in previous_atoms):
                 break
         return Nitrogen(x, y)
+
 
 class Carbon(Atom):
     def __init__(self, x_center, y_center):
@@ -166,3 +173,15 @@ class Carbon(Atom):
                 break
         return Carbon(x, y)
 
+
+class Electron(Atom):
+    def __init__(self, x_center, y_center):
+        super().__init__(x_center, y_center, co.ELECTRON_RADIUS, 0)
+
+    @staticmethod
+    def generate_random(previous_atoms):
+        while True:
+            x, y = Atom.generate_random_position(co.ELECTRON_RADIUS)
+            if all(not atom.isColliding(x, y, co.ELECTRON_RADIUS) for atom in previous_atoms):
+                break
+        return Electron(x, y)
