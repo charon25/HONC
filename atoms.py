@@ -1,3 +1,4 @@
+from collections import Counter
 from enum import IntEnum
 import math
 import random
@@ -101,6 +102,13 @@ class Atom:
         self.scale_factor = 1 - self.appearing / co.APPEARING_DURATION
         if self.appearing <= 0:
             self.appearing = None
+
+    def get_signature(self):
+        signature = []
+        for atom, multiplicity in Counter(self.bonds).items():
+            signature.append((atom.get_symbol(), str(multiplicity) if multiplicity > 1 else ''))
+        signature.sort()
+        return ''.join('{}{}'.format(*bond) for bond in signature)
 
     @staticmethod
     def generate_random(previous_atoms, weights: List[float] = [0.25, 0.25, 0.25, 0.25]):

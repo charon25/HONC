@@ -1,3 +1,4 @@
+from collections import Counter
 import random
 from typing import List
 
@@ -22,6 +23,22 @@ class Molecule:
         self.formula = Molecule.get_formula(self)
         self.bonds_count = Molecule.get_bonds_count(self)
         self.particles = Molecule.generate_particles(self)
+
+    def get_isoformula(self):
+        atoms = []
+        for atom in self.atoms:
+            atoms.append((atom.get_symbol(), atom.get_signature()))
+        atoms.sort()
+
+        formula = []
+        for (atom, signature), count in Counter(atoms).items():
+            formula.append('{}({}:{})'.format(
+                '' if count == 1 else count,
+                atom,
+                signature
+            ))
+
+        return ''.join(formula)
 
     @staticmethod
     def create_molecule(starting_atom: Atom):

@@ -6,7 +6,7 @@ from typing import List, Dict
 import pygame as pyg
 import pyghelper
 
-from atoms import Atom, AtomType, Electron, Hydrogen
+from atoms import Atom, AtomType, Carbon, Electron, Hydrogen, Nitrogen, Oxygen
 from bonding import Bonding
 import constants as co
 from molecule import Molecule
@@ -71,6 +71,7 @@ class Game:
         self.particles: List[Particle] = list()
 
         # Jeu
+        self.tutorial: Tutorial = Tutorial()
         if not restart:
             self.state: co.GameState = co.GameState.MENU
         else:
@@ -98,6 +99,19 @@ class Game:
         elif self.state == co.GameState.GAME:
             self.events.set_mousebuttondown_callback(self.click_game)
             self.events.set_mousemotion_callback(self.mousemove_game)
+            self.events.set_keydown_callback(self.keydown)
+
+    def keydown(self, data):
+        if data['key'] == pyg.K_c:
+            self.atoms.append(Carbon.generate_random(self.atoms))
+        elif data['key'] == pyg.K_h:
+            self.atoms.append(Hydrogen.generate_random(self.atoms))
+        elif data['key'] == pyg.K_n:
+            self.atoms.append(Nitrogen.generate_random(self.atoms))
+        elif data['key'] == pyg.K_o:
+            self.atoms.append(Oxygen.generate_random(self.atoms))
+        elif data['key'] == pyg.K_DELETE:
+            self.atoms = []
 
     def stop(self):
         self.is_ended = True
@@ -136,6 +150,7 @@ class Game:
             molecule = Molecule.create_molecule(atom)
             if not molecule:
                 return
+            print(molecule.get_isoformula())
             self.remove_atoms(molecule)
             self.score_molecule(molecule)
 
@@ -189,7 +204,7 @@ class Game:
         mouse_x, mouse_y = data['pos']
         if co.MENU_BTN_X <= mouse_x <= co.MENU_BTN_X + co.MENU_BTN_SIZE and co.MENU_BTN_Y <= mouse_y <= co.MENU_BTN_Y + co.MENU_BTN_SIZE:
             self.sounds.play_sound(co.SOUND_CLICK)
-            self.start(restart=True, tuto=True)
+            self.start(restart=True, tuto=False)
 
     def click_game(self, data):
         if data['button'] == 3:
@@ -326,6 +341,7 @@ class Game:
         return sum(atom.type == AtomType.ELECTRON for atom in self.atoms)
 
     def spawn_atoms(self):
+        return
         self.atom_spawn_cooldown -= 1
         if len(self.atoms) < 3:
             self.atom_spawn_cooldown -= 1
@@ -342,6 +358,7 @@ class Game:
             self.total_atoms_count += spawn_count
 
     def manage_electrons(self):
+        return
         if self.electron_cooldown > 0:
             self.electron_cooldown -= 1
             if self.electron_cooldown <= 0:
