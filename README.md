@@ -3,7 +3,7 @@ This game was made by me alone (except for the music, made by Bycob) between the
 
 It is my second game made in Python (with Pygame only, and using [my wrapper](https://github.com/charon25/PythonGameHelper)) !
 
+It ranked 130<sup>th</sup> out of 5,187 overall, and 86<sup>th</sup> in Fun.
+
 ## Link
 You can find more about the game and play it here : [itch.io/honc](https://charon25.itch.io/HONC).
-
-# Known bugs
