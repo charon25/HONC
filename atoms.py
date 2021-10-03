@@ -142,6 +142,10 @@ class Hydrogen(Atom):
                 if math.dist((x, y), (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_X)) > co.H_RADIUS + 20:
                     break
         return Hydrogen(x, y)
+    
+    @staticmethod
+    def generate_at_coordinates(x, y):
+        return Hydrogen(x, y)
 
 
 class Oxygen(Atom):
@@ -155,6 +159,10 @@ class Oxygen(Atom):
             if all(not atom.isColliding(x, y, co.O_RADIUS) for atom in previous_atoms):
                 if math.dist((x, y), (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_X)) > co.O_RADIUS + 20:
                     break
+        return Oxygen(x, y)
+    
+    @staticmethod
+    def generate_at_coordinates(x, y):
         return Oxygen(x, y)
 
 
@@ -170,6 +178,10 @@ class Nitrogen(Atom):
                 if math.dist((x, y), (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_X)) > co.N_RADIUS + 20:
                     break
         return Nitrogen(x, y)
+    
+    @staticmethod
+    def generate_at_coordinates(x, y):
+        return Nitrogen(x, y)
 
 
 class Carbon(Atom):
@@ -183,6 +195,10 @@ class Carbon(Atom):
             if all(not atom.isColliding(x, y, co.C_RADIUS) for atom in previous_atoms):
                 if math.dist((x, y), (co.RESTART_BTN_POS_X, co.RESTART_BTN_POS_X)) > co.C_RADIUS + 20:
                     break
+        return Carbon(x, y)
+    
+    @staticmethod
+    def generate_at_coordinates(x, y):
         return Carbon(x, y)
 
 

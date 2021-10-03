@@ -2,6 +2,7 @@ import math
 import random
 import time
 from typing import List, Dict
+import subprocess
 
 import pygame as pyg
 import pyghelper
@@ -40,8 +41,8 @@ class Game:
         self.sounds.add_sound(co.SOUND_ELECTRON_PATH, co.SOUND_ELECTRON, 0.4)
         self.sounds.add_sound(co.SOUND_HINT_PATH, co.SOUND_HINT, 0.4)
 
-        self.sounds.add_music(co.MUSIC_PATH, co.MUSIC)
-        self.sounds.play_music(co.MUSIC, loop=True, volume=0.2)
+        # self.sounds.add_music(co.MUSIC_PATH, co.MUSIC)
+        # self.sounds.play_music(co.MUSIC, loop=True, volume=0.2)
 
     def start(self, restart=False, tuto=False):
         # Atomes
@@ -103,15 +104,16 @@ class Game:
 
     def keydown(self, data):
         if data['key'] == pyg.K_c:
-            self.atoms.append(Carbon.generate_random(self.atoms))
+            self.atoms.append(Carbon.generate_at_coordinates(*pyg.mouse.get_pos()))
         elif data['key'] == pyg.K_h:
-            self.atoms.append(Hydrogen.generate_random(self.atoms))
+            self.atoms.append(Hydrogen.generate_at_coordinates(*pyg.mouse.get_pos()))
         elif data['key'] == pyg.K_n:
-            self.atoms.append(Nitrogen.generate_random(self.atoms))
+            self.atoms.append(Nitrogen.generate_at_coordinates(*pyg.mouse.get_pos()))
         elif data['key'] == pyg.K_o:
-            self.atoms.append(Oxygen.generate_random(self.atoms))
+            self.atoms.append(Oxygen.generate_at_coordinates(*pyg.mouse.get_pos()))
         elif data['key'] == pyg.K_DELETE:
             self.atoms = []
+            self.bonds = {}
 
     def stop(self):
         self.is_ended = True
@@ -150,7 +152,10 @@ class Game:
             molecule = Molecule.create_molecule(atom)
             if not molecule:
                 return
-            print(molecule.get_isoformula())
+            
+            isoformula = molecule.get_isoformula()
+            print(isoformula)
+            subprocess.check_call('echo {}|clip'.format(isoformula), shell=True)
             self.remove_atoms(molecule)
             self.score_molecule(molecule)
 
@@ -270,6 +275,7 @@ class Game:
         return sum(formula in co.MOLECULE_NAMES for formula in self.discovered_molecules)
 
     def draw_score_text(self, game_surface):
+        return
         font = utils.get_font(co.SCORE_TEXT_SIZE)
         score_surface = font.render('Score: {:0.00f}'.format(self.score), False, co.SCORE_TEXT_COLOR)
         game_surface.blit(score_surface, (co.WIDTH - score_surface.get_width() - co.TEXT_RIGHT_MARGIN, co.SCORE_TEXT_Y))
@@ -368,6 +374,7 @@ class Game:
             self.atoms.append(Electron.generate_random(self.atoms))
 
     def spawn_star(self):
+        return
         self.star_cooldown -= 1
         if self.star_cooldown <= 0:
             self.star_cooldown = 1

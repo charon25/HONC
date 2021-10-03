@@ -4,8 +4,8 @@ import pyghelper
 
 
 # Fenêtre
-WIDTH = 700
-HEIGHT = 700
+WIDTH = 1000
+HEIGHT = 1000
 BG_TEXTURE = pyghelper.Image.create('resources/textures/bg.png')
 
 # Etat de jeu

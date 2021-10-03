@@ -1,9 +1,12 @@
 import pygame
 import pyghelper
 
+WIDTH = 1000
+HEIGHT = 700
+
 pygame.init()
 pygame.display.init()
-screen = pyghelper.Window.create(width=700, height=700, title='GMTK 2021', icon_path='resources/icon.png')
+screen = pyghelper.Window.create(width=WIDTH, height=HEIGHT, title='GMTK 2021', icon_path='resources/icon.png')
 
 from game import Game
 
