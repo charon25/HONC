@@ -14,6 +14,15 @@ class GameState(IntEnum):
     MENU = 10
     TUTO = 20
 
+# Etat du trailer
+class TrailerState(IntEnum):
+    NONE = -1
+    WATER = 0
+    CO2 = 1
+    ETHANOL = 2
+    RANDOM = 3
+TRAILER_TIME_BETWEEN = 5 * 60
+
 # Général
 BONDING_HEIGHT = [None, 15, 2 * 15 + 10, 3 * 15 + 2 * 10]
 FONT_PATH = 'resources/font/betterpixels.ttf'

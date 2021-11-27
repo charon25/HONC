@@ -1,12 +1,13 @@
 import math
 import random
+import re
 import time
 from typing import List, Dict
 
 import pygame as pyg
 import pyghelper
 
-from atoms import Atom, AtomType, Electron, Hydrogen
+from atoms import Atom, AtomType, Electron, Hydrogen, Oxygen, Nitrogen, Carbon
 from bonding import Bonding
 import constants as co
 from molecule import Molecule
@@ -79,6 +80,8 @@ class Game:
                 self.tutorial: Tutorial = Tutorial()
             else:
                 self.state: co.GameState = co.GameState.GAME
+                if not hasattr(self, 'tutorial'):
+                    self.tutorial: Tutorial = Tutorial()
                 self.tutorial.end()
         self.set_callbacks()
         self.weights = [1.0, 0.0, 0.0, 0.0]
@@ -87,6 +90,9 @@ class Game:
         self.discovered_text = None
         self.last_discovered_time = time.time()
         self.hint = ''
+        self.trailer_state: co.TrailerState = co.TrailerState.NONE
+        self.trailer_molecule_created = True
+        self.trailer_time_before_next = 0
 
     def set_callbacks(self):
         if self.state == co.GameState.MENU:
@@ -163,7 +169,10 @@ class Game:
             self.discover_molecule(molecule)
             self.sounds.play_sound(co.SOUND_MOLECULE_NEW)
         else:
-            self.sounds.play_sound(co.SOUND_MOLECULE)            
+            self.sounds.play_sound(co.SOUND_MOLECULE)     
+
+        self.trailer_time_before_next = co.TRAILER_TIME_BETWEEN
+        self.trailer_molecule_created = True       
 
     def discover_molecule(self, molecule: Molecule):
         self.discovered_molecules.append(molecule.formula)
@@ -189,7 +198,7 @@ class Game:
         mouse_x, mouse_y = data['pos']
         if co.MENU_BTN_X <= mouse_x <= co.MENU_BTN_X + co.MENU_BTN_SIZE and co.MENU_BTN_Y <= mouse_y <= co.MENU_BTN_Y + co.MENU_BTN_SIZE:
             self.sounds.play_sound(co.SOUND_CLICK)
-            self.start(restart=True, tuto=True)
+            self.start(restart=True, tuto=False)
 
     def click_game(self, data):
         if data['button'] == 3:
@@ -327,6 +336,7 @@ class Game:
         return sum(atom.type == AtomType.ELECTRON for atom in self.atoms)
 
     def spawn_atoms(self):
+        return
         self.atom_spawn_cooldown -= 1
         if len(self.atoms) < 3:
             self.atom_spawn_cooldown -= 1
@@ -349,6 +359,7 @@ class Game:
                 self.atom_spawn_multiplier = 1.0
 
         if self.electron_count() == 0 and random.random() < co.ELECTRON_PROBABILITY:
+            return
             self.atoms.append(Electron.generate_random(self.atoms))
 
     def spawn_star(self):
@@ -381,6 +392,73 @@ class Game:
                 self.sounds.play_sound(co.SOUND_HINT)
                 return
 
+    def get_molecule_bond_counts(self, formula):
+        return sum(int(match[1]) if match[1] != '' else 1 for match in re.findall(r'(\w(\d*))', formula))
+
+    def spawn_next_trailer_molecule(self):
+        if self.trailer_state == co.TrailerState.WATER:
+            self.atoms.append(Hydrogen(co.WIDTH // 4, 3 * co.HEIGHT // 5))
+            self.atoms.append(Hydrogen(3 * co.WIDTH // 4, 3 * co.HEIGHT // 5))
+            self.atoms.append(Oxygen(2 * co.WIDTH // 4, 2 * co.HEIGHT // 5))
+        elif self.trailer_state == co.TrailerState.CO2:
+            self.atoms.append(Oxygen(co.WIDTH // 4, co.HEIGHT // 2))
+            self.atoms.append(Oxygen(3 * co.WIDTH // 4, co.HEIGHT // 2))
+            self.atoms.append(Carbon(co.WIDTH // 2, co.HEIGHT // 2))
+        elif self.trailer_state == co.TrailerState.ETHANOL:
+            self.atoms.append(Carbon(3 * co.WIDTH // 10, co.HEIGHT // 2))
+            self.atoms.append(Carbon(co.WIDTH // 2, co.HEIGHT // 2))
+            self.atoms.append(Oxygen(7 * co.WIDTH // 10, co.HEIGHT // 2))
+            
+            self.atoms.append(Hydrogen(1 * co.WIDTH // 10, co.HEIGHT // 2))
+            self.atoms.append(Hydrogen(9 * co.WIDTH // 10, co.HEIGHT // 2))
+            
+            self.atoms.append(Hydrogen(3 * co.WIDTH // 10, 3 * co.HEIGHT // 10))
+            self.atoms.append(Hydrogen(co.WIDTH // 2, 3 * co.HEIGHT // 10))
+            self.atoms.append(Hydrogen(3 * co.WIDTH // 10, 7 * co.HEIGHT // 10))
+            self.atoms.append(Hydrogen(co.WIDTH // 2, 7 * co.HEIGHT // 10))
+        elif self.trailer_state == co.TrailerState.RANDOM:
+            self.atoms.append(Carbon(287, 245))
+            self.atoms.append(Carbon(474, 468))
+            
+            self.atoms.append(Nitrogen(535, 126))
+            self.atoms.append(Nitrogen(115, 480))
+            self.atoms.append(Nitrogen(435, 591))
+            
+            self.atoms.append(Oxygen(225, 100))
+            self.atoms.append(Oxygen(409, 218))
+            self.atoms.append(Oxygen(264, 450))
+            self.atoms.append(Oxygen(557, 333))
+            
+            self.atoms.append(Hydrogen(195, 318))
+            self.atoms.append(Hydrogen(442, 369))
+            self.atoms.append(Hydrogen(550, 541))
+        
+        self.discovered_molecules = []
+        self.discovered_molecules_bonds_count = {}
+        total_molecules = len(co.MOLECULE_NAMES)
+        for i in range(random.randrange(5, 12)):
+            while True:
+                index = random.randrange(total_molecules)
+                formula = list(co.MOLECULE_NAMES.keys())[index]
+                if formula != 'H2O' and formula != 'CO2' and formula != 'C2H6O' and formula not in self.discovered_molecules:
+                    break
+            print(self.discovered_molecules)
+            self.discovered_molecules.append(formula)
+            self.discovered_molecules_bonds_count[formula] = self.get_molecule_bond_counts(formula)
+
+        self.discovered_molecules.sort(
+            key=lambda formula:self.discovered_molecules_bonds_count[formula] if formula in self.discovered_molecules_bonds_count else 0,
+            reverse=True
+        )
+
+    def manage_trailer_spawn(self):
+        if self.trailer_molecule_created:
+            self.trailer_time_before_next -= 1
+            if self.trailer_time_before_next <= 0:
+                self.trailer_state += 1
+                self.spawn_next_trailer_molecule()
+                self.trailer_molecule_created = False
+
 
     def loop_game(self, tuto=False):
         for atom in self.atoms:
@@ -396,6 +474,7 @@ class Game:
         if not tuto:
             self.spawn_atoms()
             self.manage_electrons()
+            self.manage_trailer_spawn()
 
             if self.multiplier > co.MULTIPLIER_MIN:
                 self.multiplier *= co.MULTIPLIER_DECREASE
@@ -404,10 +483,10 @@ class Game:
                 if self.discovered_text[1] <= 0:
                     self.discovered_text = None
             
-            if time.time() - self.last_discovered_time >= co.HINT_DURATION:
-                self.last_discovered_time = time.time()
-                if self.hint == '':
-                    self.show_hint()
+            # if time.time() - self.last_discovered_time >= co.HINT_DURATION:
+            #     self.last_discovered_time = time.time()
+            #     if self.hint == '':
+            #         self.show_hint()
 
         if tuto:
             self.tutorial.age()
