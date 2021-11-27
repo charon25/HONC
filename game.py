@@ -41,7 +41,7 @@ class Game:
         self.sounds.add_sound(co.SOUND_HINT_PATH, co.SOUND_HINT, 0.4)
 
         self.sounds.add_music(co.MUSIC_PATH, co.MUSIC)
-        self.sounds.play_music(co.MUSIC, loop=True, volume=0.2)
+        self.sounds.play_music(co.MUSIC, loop=True, volume=0.05)
 
     def start(self, restart=False, tuto=False):
         # Atomes
@@ -227,6 +227,7 @@ class Game:
     def click_electron(self, electron: Electron):
         self.electron_cooldown = co.ELECTRON_DURATION
         self.atom_spawn_multiplier = co.ELECTRON_MULTIPLIER
+        self.atom_spawn_cooldown *= co.ELECTRON_MULTIPLIER
         self.offset = self.screen_shake_electron()
         self.sounds.play_sound(co.SOUND_ELECTRON)
         self.atoms.remove(electron)
